@@ -233,7 +233,7 @@ def _snap_to_columns_along_axis(x1: float, y1: float,
                                 x2: float, y2: float,
                                 col_syms: list,
                                 perp_tol: float = 30.0,
-                                snap_dist: float = 30.0) -> tuple:
+                                snap_dist: float = 50.0) -> tuple:
     """
     Snap both endpoints of a matched beam segment to the nearest column
     symbol that lies along the beam axis.
@@ -263,8 +263,13 @@ def _snap_to_columns_along_axis(x1: float, y1: float,
     ux, uy = dx / ln, dy / ln   # unit along beam
     px, py = -uy, ux            # unit perpendicular
 
-    best_left_t  = 0.0    # parametric position of best left-snap column  (0 = no snap)
-    best_right_t = ln     # parametric position of best right-snap column  (ln = no snap)
+    # Snap each end to the NEAREST column beyond it (not the furthest).
+    # Taking the nearest is what makes a larger snap_dist safe: the endpoint
+    # connects to the immediately-adjacent column and never jumps a bay.
+    # Because targets are real column centres, this can never fly into empty
+    # space the way a generic line-extension can.
+    best_left_t  = None   # nearest column just BEFORE x1  (t < 0)
+    best_right_t = None   # nearest column just AFTER  x2  (t > ln)
 
     for sym in col_syms:
         cx, cy = sym["cx"], sym["cy"]
@@ -275,19 +280,21 @@ def _snap_to_columns_along_axis(x1: float, y1: float,
         if perp > perp_tol:
             continue   # column is not on this beam's axis
 
-        # Left end: column is just before x1 (negative t, within snap_dist)
-        if -snap_dist <= t < best_left_t:
-            best_left_t = t
+        # Left end: column before x1 — keep the one closest to x1 (t nearest 0)
+        if -snap_dist <= t < 0:
+            if best_left_t is None or t > best_left_t:
+                best_left_t = t
 
-        # Right end: column is just past x2 (t > ln, within snap_dist)
-        if best_right_t < t <= ln + snap_dist:
-            best_right_t = t
+        # Right end: column past x2 — keep the one closest to x2 (t nearest ln)
+        if ln < t <= ln + snap_dist:
+            if best_right_t is None or t < best_right_t:
+                best_right_t = t
 
     ox1, oy1 = x1, y1   # keep original origin for right-end computation
-    if best_left_t < 0:
+    if best_left_t is not None:
         x1 = ox1 + best_left_t * ux
         y1 = oy1 + best_left_t * uy
-    if best_right_t > ln:
+    if best_right_t is not None:
         x2 = ox1 + best_right_t * ux
         y2 = oy1 + best_right_t * uy
 
@@ -422,7 +429,7 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
     #     3–30 pt, so 45 pt cleanly separates them from beam centrelines.
     # Dynamically scale MIN_LEN to allow short beams (down to 3 ft) at any scale,
     # but never drop below 15 pt to keep filtering out small hatch marks.
-    MIN_LEN  = max(15, int(pts_per_foot * 3.0)) if pts_per_foot > 0 else 30
+    MIN_LEN  = max(12, int(pts_per_foot * 1.0)) if pts_per_foot > 0 else 15
     # Cap at 80 ft using the drawing scale — prevents full-plan dimension/
     # annotation lines from being matched as beam centrelines.
     # Fall back to 700 pt (≈78 ft at 1/8") when scale is unknown.
@@ -452,8 +459,8 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
     if plan_bounds:
         _pb_w = plan_bounds[2] - plan_bounds[0]
         _pb_h = plan_bounds[3] - plan_bounds[1]
-        MAX_H_MATCH = min(MAX_H_MATCH, _pb_w * 0.65)
-        MAX_V_MATCH = min(MAX_V_MATCH, _pb_h * 0.65)
+        MAX_H_MATCH = min(MAX_H_MATCH, _pb_w * 0.90)
+        MAX_V_MATCH = min(MAX_V_MATCH, _pb_h * 0.90)
 
     all_lines: list[tuple] = []   # (x1, y1, x2, y2, length)
     thin_segs: list[tuple] = []   # thin-stroke segments at beam/column junctions
@@ -649,12 +656,26 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
             if thin_segs:
                 lx1, ly1, lx2, ly2, ln = _extend_with_thin_segs(
                     lx1, ly1, lx2, ly2, thin_segs)
+            # Remember the TRUE drawn extent (matched centreline + hairline
+            # continuations).  Every later pass (column snap, intersection snap)
+            # may only push an endpoint a little BEYOND this — the final clamp
+            # below enforces that, so no beam can overshoot into empty space
+            # regardless of which pass extended it.
+            _draw_x1, _draw_y1 = lx1, ly1
+            _draw_x2, _draw_y2 = lx2, ly2
             # ── Pass 3a: column-symbol snap ───────────────────────────────────
-            # When I/H column symbols are detected, snap endpoints to the
-            # nearest symbol that lies along the beam axis.
-            if column_symbols:
+            # Snap endpoints to the nearest real column lying along the beam
+            # axis.  Targets = detected I/H column symbols PLUS grid-line
+            # intersections (also exact column centres).  Both are guaranteed
+            # column positions, so this can connect a short-drawn beam to its
+            # column without any risk of flying into empty space.
+            _col_targets = list(column_symbols or [])
+            if v_grid and h_grid:
+                _col_targets += [{"cx": gx, "cy": gy}
+                                 for gx in v_grid for gy in h_grid]
+            if _col_targets:
                 lx1, ly1, lx2, ly2, ln = _snap_to_columns_along_axis(
-                    lx1, ly1, lx2, ly2, column_symbols)
+                    lx1, ly1, lx2, ly2, _col_targets)
             # ── Pass 3b: physical intersection snap ───────────────────────────────
             # Geometrically extend each beam endpoint by up to _EXT_MAX points
             # to the nearest crossing line, so beams meet at the column/beam
@@ -674,7 +695,12 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
             # of the beam is drawn (some drafters draw to column face, or split
             # beams into bay-by-bay segments).  Nearest-snap stops at the first
             # real crossing line so there is no overrun.
-            _EXT_MAX = max(40, min(250, pts_per_foot * 15)) if pts_per_foot > 0 else 100.0
+            # Beam-face → column-centreline gap is only half a column depth
+            # (< 1 ft).  Allow 2.5 ft of extension to bridge that plus minor
+            # drafter slack.  Crucially, when NO column line is within this
+            # range the endpoint KEEPS its drawn position instead of flying out
+            # to a far grid/perimeter line in empty space (the overshoot bug).
+            _EXT_MAX = max(15, min(45, pts_per_foot * 2.5)) if pts_per_foot > 0 else 25.0
             _adx, _ady = abs(lx2 - lx1), abs(ly2 - ly1)
             _is_H = _adx > _ady * 2
             _is_V = _ady > _adx * 2
@@ -776,6 +802,29 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
                         _snap_B = (lx2 + _fwdx * t, ly2 + _fwdy * t)
             if _snap_B:
                 lx2, ly2 = _snap_B
+
+            # ── FINAL ANTI-OVERSHOOT CLAMP ────────────────────────────────────
+            # No endpoint may sit more than _EXT_MAX beyond the true drawn extent
+            # captured above.  This bounds the COMBINED effect of every snap pass
+            # (column-symbol snap, intersection snap), so a beam can never fly
+            # past its drawn line into empty space — on any drawing, generically.
+            # Measured along the original drawn axis; movement back toward the
+            # beam (shrinking) is never clamped.
+            _odx = _draw_x2 - _draw_x1
+            _ody = _draw_y2 - _draw_y1
+            _oln = math.hypot(_odx, _ody)
+            if _oln > 1.0:
+                _oux, _ouy = _odx / _oln, _ody / _oln
+                # Endpoint A: outward direction is -axis; clamp extension to _EXT_MAX
+                _extA = -((lx1 - _draw_x1) * _oux + (ly1 - _draw_y1) * _ouy)
+                if _extA > _EXT_MAX:
+                    lx1 = _draw_x1 - _oux * _EXT_MAX
+                    ly1 = _draw_y1 - _ouy * _EXT_MAX
+                # Endpoint B: outward direction is +axis
+                _extB = (lx2 - _draw_x2) * _oux + (ly2 - _draw_y2) * _ouy
+                if _extB > _EXT_MAX:
+                    lx2 = _draw_x2 + _oux * _EXT_MAX
+                    ly2 = _draw_y2 + _ouy * _EXT_MAX
 
             ln = math.hypot(lx2 - lx1, ly2 - ly1)
             adx = abs(lx2 - lx1)
@@ -2401,14 +2450,23 @@ def build_members(profiles, page_w, page_h,
             # A rejected match falls through to the grid-based fallback.
             _use_line_hit = False
             if line_hit:
-                MIN_STRUCT_PT = 60   # ≈ 6 ft at 1/8" scale
+                MIN_STRUCT_PT = 12   # ≈ 1.3 ft at 1/8" scale — allow short real beams
                 beam_dir  = line_hit["dir"]
                 length_pt = line_hit["length_pt"]
 
-                if length_pt < MIN_STRUCT_PT:
+                # W-sections in framing plans are always H or V — never diagonal.
+                # A diagonal match means the label was near a stair boundary, brace,
+                # or section-cut line.  Reject it so grid fallback runs instead.
+                _is_w_section = re.match(r'W\d+[Xx]\d+', p["profile"].upper())
+                if _is_w_section and beam_dir == "D":
+                    print(f"[BUILD] Rejected diagonal match for W-section "
+                          f"{p['profile']} — likely stair/brace line")
+                    line_hit = None
+
+                if line_hit and length_pt < MIN_STRUCT_PT:
                     print(f"[BUILD] Vector match too short ({length_pt:.0f} pt) "
                           f"for {p['profile']} — dropped as annotation line")
-                else:
+                elif line_hit:
                     # ── Perpendicular-distance validation ─────────────────────
                     # Compute how far the label sits from the matched segment.
                     # Labels placed on the beam centreline are ≤ 20 pt away.
@@ -2458,41 +2516,42 @@ def build_members(profiles, page_w, page_h,
 
             if not _use_line_hit:
                 # ── FALLBACK: grid-based approximation ──────────────────────
-                # In vector PDFs, if no vector line was found within LABEL_R of the text,
-                # it means the CAD drafter placed a label far from any structural line
-                # (e.g. a detached schedule, a generic note, or a redundant callout outside
-                # the building). Falling back to the grid-guesser here creates massive fake
-                # "flying" lines that ruin BOM quantities. We ONLY fall back to grid
-                # guessing for raster images where vector lines literally don't exist.
-                if is_vector:
-                    print(f"[BUILD] Stray label '{p['profile']}' at {p['cx']:.0f},{p['cy']:.0f} "
-                          f"has no vector line nearby. Disabling grid fallback to prevent flying lines.")
-                    span = None
+                # Runs for both vector and raster PDFs.
+                # Always try BOTH H and V spans and pick the LONGER one.
+                # The correct structural direction always spans the full bay
+                # (longer dimension), so the wrong direction is always shorter.
+                # This eliminates wrong-direction lines caused by unreliable
+                # detect_beam_directions() results near openings / dense areas.
+                def _try_span(direction):
+                    if not (v_grid and h_grid):
+                        return None
+                    # Use ONLY real detected column grid positions — no plan-boundary
+                    # extension.  Adding plan boundaries as synthetic columns caused
+                    # two bugs: (a) very wide spans that were cleared by the 65%-plan
+                    # sanity check, leaving real beams with no line; (b) stray labels
+                    # near the plan edge getting full-width flying lines.
+                    return compute_beam_span(
+                        p["cx"], p["cy"], v_grid, h_grid, pts_per_foot, direction)
+
+                _span_h = _try_span("H")
+                _span_v = _try_span("V")
+                _len_h  = _span_h["length_ft"] if _span_h else 0.0
+                _len_v  = _span_v["length_ft"] if _span_v else 0.0
+
+                # Detected direction is highly reliable; fall back to longer span if direction is missing
+                _hint = ((beam_dirs or {}).get(p_idx) or p.get("dir_hint", "H"))
+                if _hint == "V" and _span_v:
+                    span, beam_dir = _span_v, "V"
+                elif _hint == "H" and _span_h:
+                    span, beam_dir = _span_h, "H"
+                elif _len_h > _len_v:
+                    span, beam_dir = _span_h, "H"
+                elif _len_v > _len_h:
+                    span, beam_dir = _span_v, "V"
+                elif _hint == "V":
+                    span, beam_dir = _span_v, "V"
                 else:
-                    # Priority: vector-based direction dict → OCR rotation hint → "H"
-                    beam_dir = ((beam_dirs or {}).get(p_idx)
-                                or p.get("dir_hint", "H"))
-
-                    # Try both directions and pick whichever yields a geometrically
-                    # valid span.  This helps pages where direction detection is
-                    # unreliable (e.g. rotated/angled structural grids).
-                    def _try_span(direction):
-                        if not (v_grid and h_grid):
-                            return None
-                        sp = compute_beam_span(
-                            p["cx"], p["cy"], v_grid, h_grid, pts_per_foot, direction)
-                        # Edge-beam extension: if no surrounding grid on one side,
-                        # extend with the plan boundary so perimeter beams get a length.
-                        if sp is None and plan_bounds:
-                            pb0x, pb0y, pb1x, pb1y = plan_bounds
-                            sp = compute_beam_span(
-                                p["cx"], p["cy"],
-                                sorted(set(v_grid) | {pb0x, pb1x}),
-                                sorted(set(h_grid) | {pb0y, pb1y}),
-                                pts_per_foot, direction)
-                        return sp
-
-                    span = _try_span(beam_dir)
+                    span, beam_dir = _span_h, "H"
 
                 # If primary direction failed validation, try the other.
                 if span:
@@ -2552,13 +2611,13 @@ def build_members(profiles, page_w, page_h,
             # Only reject spans that exceed 90% of the plan — this keeps grid/boundary
             # lines out while allowing genuine multi-bay beams (~80% of plan).
             if beam_dir == "H":
-                _too_long = _span_w > _pb_w_pt * 0.65
+                _too_long = _span_w > _pb_w_pt * 0.90
             elif beam_dir == "V":
-                _too_long = _span_h > _pb_h_pt * 0.65
+                _too_long = _span_h > _pb_h_pt * 0.90
             elif beam_dir == "D":
-                _too_long = math.hypot(_span_w, _span_h) > math.hypot(_pb_w_pt, _pb_h_pt) * 0.65
+                _too_long = math.hypot(_span_w, _span_h) > math.hypot(_pb_w_pt, _pb_h_pt) * 0.90
             else:
-                _too_long = (_span_h > _pb_h_pt * 0.65 or _span_w > _pb_w_pt * 0.65)
+                _too_long = (_span_h > _pb_h_pt * 0.90 or _span_w > _pb_w_pt * 0.90)
             if _too_long:
                 print(f"[BUILD] Span too long for {p['profile']} dir={beam_dir} "
                       f"w={_span_w:.0f} h={_span_h:.0f} vs plan "
@@ -2574,14 +2633,15 @@ def build_members(profiles, page_w, page_h,
         #
         # Rule: max_span_ft = nominal_depth_inches × 4
         #   W12 → 48 ft   W16 → 64 ft   W24 → 96 ft   W36 → 144 ft
-        # This catches impossible matches (W12X16 @ 87ft) while keeping
-        # all legitimate long-span girders (W36, W40, plate girders).
-        # HSS, L, C etc. are excluded — their bending axis varies.
+        # This catches impossible matches (W12X16 @ 132ft from a false line/grid
+        # match) while keeping all legitimate long-span girders (W36, W40, plate
+        # girders).  Applies to BOTH W-sections and rectangular HSS beams — the
+        # depth is the first number in either name (W16X.. or HSS16X4..).
         if bx1 is not None and mtype == "beam" and length_ft > 0:
-            _depth_match = re.match(r'W(\d{1,2})[Xx]', p["profile"])
+            _depth_match = re.match(r'(?:W|HSS)(\d{1,2})', p["profile"], re.IGNORECASE)
             if _depth_match:
                 _nom_depth = int(_depth_match.group(1))
-                _max_span_ft = _nom_depth * 4      # generous upper bound
+                _max_span_ft = _nom_depth * 4     # realistic upper bound (L/d ~48)
                 if length_ft > _max_span_ft:
                     print(f"[BUILD] Section-depth check failed: {p['profile']} "
                           f"span={length_ft:.1f}ft > max={_max_span_ft}ft "
@@ -2626,7 +2686,7 @@ def build_members(profiles, page_w, page_h,
     #    ≈ 0.5" tolerance) and keep only the entry whose profile appears most
     #    frequently in the group (plurality vote); ties go to the heaviest
     #    section (highest weight-per-foot digit in the name).
-    MIN_BEAM_FT = 5.0     # structural beams are never shorter than ~5 ft
+    MIN_BEAM_FT = 1.0     # structural beams can be short framing stubs
     SPAN_TOL_PT = 8       # round endpoints to this many pts before grouping
 
     filtered = []
@@ -2678,6 +2738,74 @@ def build_members(profiles, page_w, page_h,
             dropped = [m["profile"] for m in grp if m is not keeper]
             print(f"[DEDUP] Merged {len(grp)} beams at same span → kept {winner}, "
                   f"dropped {dropped}")
+
+    # ── 3. PARALLEL-OVERLAP DEDUP ─────────────────────────────────────────────
+    # The exact-span grouping above only catches IDENTICAL spans.  CAD drawings
+    # often draw a beam centreline twice (e.g. centreline + an adjacent flange/
+    # wall-face line), producing two same-profile spans that are parallel and
+    # overlapping but a few pt apart — they render as a doubled line with two
+    # stacked chips.  Merge them: keep the longer span, drop the shorter.
+    # Strict gate (same profile, near-parallel, perp gap ≤ 20 pt ≈ 2.2 ft,
+    # real axial overlap) ensures genuine adjacent beams are never merged.
+    def _seg_pt(m):
+        return (m["bx1"] * page_w, m["by1"] * page_h,
+                m["bx2"] * page_w, m["by2"] * page_h)
+
+    def _is_parallel_overlap(a, b):
+        ax1, ay1, ax2, ay2 = _seg_pt(a)
+        bx1p, by1p, bx2p, by2p = _seg_pt(b)
+        aL = math.hypot(ax2 - ax1, ay2 - ay1)
+        bL = math.hypot(bx2p - bx1p, by2p - by1p)
+        if aL < 1 or bL < 1:
+            return False
+        ux, uy = (ax2 - ax1) / aL, (ay2 - ay1) / aL
+        # Parallel? (direction dot ≥ cos16° ≈ 0.96)
+        if abs(((bx2p - bx1p) * ux + (by2p - by1p) * uy) / bL) < 0.96:
+            return False
+        # Perpendicular gap from B-midpoint to A's line
+        mx, my = (bx1p + bx2p) / 2, (by1p + by2p) / 2
+        perp = abs((mx - ax1) * (-uy) + (my - ay1) * ux)
+        # Length ratio and axial overlap fraction (of the shorter segment)
+        lr = min(aL, bL) / max(aL, bL)
+        tb1 = (bx1p - ax1) * ux + (by1p - ay1) * uy
+        tb2 = (bx2p - ax1) * ux + (by2p - ay1) * uy
+        lo, hi = max(0.0, min(tb1, tb2)), min(aL, max(tb1, tb2))
+        ovr = (hi - lo) / min(aL, bL)
+
+        # Path 1 — DOUBLED LINE: same beam drawn a few pt apart (centreline +
+        # flange/wall-face line).  Needs near-equal length and heavy overlap.
+        if perp <= 20 and lr >= 0.7 and ovr >= 0.7:
+            return True
+
+        # Path 2 — COLLINEAR DUPLICATE: two same-profile spans on essentially the
+        # SAME line (perp ≤ 4 pt) that overlap.  Two physically distinct beams are
+        # never on the exact same centreline AND overlapping, so this is always a
+        # duplicate detection — even when overlap/length differ moderately.
+        # The lr ≥ 0.5 floor still protects a genuine short beam that merely runs
+        # along part of a long girder (extreme length mismatch).
+        if perp <= 4.0 and lr >= 0.5 and ovr >= 0.5:
+            return True
+
+        return False
+
+    _po_kept = []
+    _po_dropped = 0
+    for mem in deduped_beams:
+        dup_of = None
+        for k in _po_kept:
+            if k["profile"] == mem["profile"] and _is_parallel_overlap(k, mem):
+                dup_of = k
+                break
+        if dup_of is None:
+            _po_kept.append(mem)
+        else:
+            # keep whichever has the longer drawn span
+            if mem.get("length_ft", 0) > dup_of.get("length_ft", 0):
+                _po_kept[_po_kept.index(dup_of)] = mem
+            _po_dropped += 1
+    if _po_dropped:
+        print(f"[DEDUP] Parallel-overlap pass removed {_po_dropped} doubled beam(s)")
+    deduped_beams = _po_kept
 
     deduped = deduped_beams + no_span_beams + \
               [m for m in filtered if m["type"] != "beam"]
@@ -2881,6 +3009,31 @@ async def analyse_pdf(req: AnalysisRequest):
                 v_grid = rv
             if rh:
                 h_grid = rh
+
+        # 3c. If v_grid or h_grid is empty, derive from column symbol positions.
+        #     Vertical framing elevations often have no text grid labels, so
+        #     extract_grid_lines returns empty lists.  Column symbol X/Y positions
+        #     are reliable substitutes: cluster within 30 pt merge tolerance.
+        def _cluster_positions(vals, tol=30.0):
+            out = []
+            for v in sorted(vals):
+                if not out or v - out[-1] > tol:
+                    out.append(v)
+            return out
+
+        if column_symbols:
+            if not v_grid:
+                _sym_xs = [s["cx"] for s in column_symbols]
+                v_grid = _cluster_positions(_sym_xs, tol=30.0)
+                if v_grid:
+                    print(f"[ANALYSE] v_grid derived from {len(column_symbols)} symbols: "
+                          f"{[round(x) for x in v_grid]}")
+            if not h_grid:
+                _sym_ys = [s["cy"] for s in column_symbols]
+                h_grid = _cluster_positions(_sym_ys, tol=30.0)
+                if h_grid:
+                    print(f"[ANALYSE] h_grid derived from {len(column_symbols)} symbols: "
+                          f"{[round(y) for y in h_grid]}")
 
         # 4. Extract profile labels within the plan
         profiles = extract_profiles(page, page_w, page_h, plan_bounds,
