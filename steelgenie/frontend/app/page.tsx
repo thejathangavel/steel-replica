@@ -121,6 +121,9 @@ export default function Home() {
   const [markerDots, setMarkerDots]       = useState<{x:number;y:number}[]>([]);
   const [rulerLines, setRulerLines]       = useState<{x1:number;y1:number;x2:number;y2:number}[]>([]);
   const [undoStack, setUndoStack]         = useState<Array<"marker"|"ruler">>([]);
+  // Pixel dimensions of the image wrapper — used to compute correct visual
+  // beam angles from fraction-based bx/by endpoints (angle depends on aspect ratio).
+  const [wrapperSize, setWrapperSize]     = useState({ w: 1, h: 1 });
   const [showSaveModal, setShowSaveModal]         = useState(false);
   const [saveProjectName, setSaveProjectName]     = useState("");
   const [saveLoading, setSaveLoading]             = useState(false);
@@ -205,6 +208,20 @@ export default function Home() {
     setMembers(prev => prev.filter((_, i) => i !== idx));
     setContextMenu(null);
   }
+
+  // ── WRAPPER SIZE TRACKER (for diagonal beam angle computation) ───────────
+  useEffect(() => {
+    const el = imageWrapperRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(entries => {
+      const rect = entries[0]?.contentRect;
+      if (rect) setWrapperSize({ w: rect.width || 1, h: rect.height || 1 });
+    });
+    obs.observe(el);
+    // Set initial size immediately
+    setWrapperSize({ w: el.clientWidth || 1, h: el.clientHeight || 1 });
+    return () => obs.disconnect();
+  }, []);
 
   // ── ZOOM ──────────────────────────────────────────────────────────────────
   function stepZoom(dir: 1 | -1) {
@@ -970,6 +987,20 @@ export default function Home() {
                     }
                   }
 
+                  // Compute visual angle of beam line so the chip rotates
+                  // to align with the actual drawn line direction.
+                  // Uses the wrapper pixel dimensions so the angle is correct
+                  // regardless of page aspect ratio or zoom level.
+                  let chipAngle = 0;
+                  if (isBeam && m.bx1 != null && m.bx2 != null && m.by1 != null && m.by2 != null) {
+                    const dx = (m.bx2 - m.bx1) * wrapperSize.w;
+                    const dy = (m.by2 - m.by1) * wrapperSize.h;
+                    chipAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+                    // Normalise to [-90°, 90°] so text always reads left→right
+                    if (chipAngle >  90) chipAngle -= 180;
+                    if (chipAngle < -90) chipAngle += 180;
+                  }
+
                   return (
                     <div
                       key={idx}
@@ -977,7 +1008,9 @@ export default function Home() {
                         position: "absolute",
                         left: `${anchorX * 100}%`,
                         top:  `${anchorY * 100}%`,
-                        transform: "translate(-50%, -50%)",
+                        transform: chipAngle !== 0
+                          ? `translate(-50%, -50%) rotate(${chipAngle.toFixed(2)}deg)`
+                          : "translate(-50%, -50%)",
                         zIndex: 20, cursor: "pointer",
                       }}
                       onMouseEnter={e => { setHoveredMember(m); setTooltipPos({ x: e.clientX + 14, y: e.clientY - 36 }); }}
@@ -1035,15 +1068,10 @@ export default function Home() {
                           boxShadow: isHov ? `0 0 6px ${m.color}` : "0 1px 3px rgba(0,0,0,0.5)",
                           transition: "all 0.1s",
                           letterSpacing: "0.02em",
-                          writingMode: m.beam_dir === "V" ? "vertical-rl" : undefined,
                         }}>
                           {m.profile}
                           {m.length_ft > 0 && (
-                            <span style={{
-                              color: "#FBD0E8", fontWeight: 400,
-                              marginLeft: m.beam_dir === "V" ? "0" : "3px",
-                              marginTop:  m.beam_dir === "V" ? "2px" : "0",
-                            }}>
+                            <span style={{ color: "#FBD0E8", fontWeight: 400, marginLeft: "3px" }}>
                               {formatFt(m.length_ft)}
                             </span>
                           )}
