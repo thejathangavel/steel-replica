@@ -63,14 +63,28 @@ const MEMBER_COLORS: Record<string, string> = {
 const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 
 const SCALE_OPTIONS = [
-  { label: '1/32" = 1\'-0"', ratio: 384 },
-  { label: '3/64" = 1\'-0"', ratio: 256 },
-  { label: '1/16" = 1\'-0"', ratio: 192 },
-  { label: '3/32" = 1\'-0"', ratio: 128 },
-  { label: '1/8" = 1\'-0"',  ratio: 96  },
-  { label: '3/16" = 1\'-0"', ratio: 64  },
-  { label: '1/4" = 1\'-0"',  ratio: 48  },
-  { label: '3/8" = 1\'-0"',  ratio: 32  },
+  // ── Architectural scales (ratio = 12 / paper-inches-per-foot) ──
+  { label: '1/32" = 1\'-0"',  ratio: 384 },
+  { label: '3/64" = 1\'-0"',  ratio: 256 },
+  { label: '1/16" = 1\'-0"',  ratio: 192 },
+  { label: '3/32" = 1\'-0"',  ratio: 128 },
+  { label: '1/8" = 1\'-0"',   ratio: 96  },
+  { label: '3/16" = 1\'-0"',  ratio: 64  },
+  { label: '1/4" = 1\'-0"',   ratio: 48  },
+  { label: '3/8" = 1\'-0"',   ratio: 32  },
+  { label: '1/2" = 1\'-0"',   ratio: 24  },
+  { label: '3/4" = 1\'-0"',   ratio: 16  },
+  { label: '1" = 1\'-0"',     ratio: 12  },
+  { label: '1-1/2" = 1\'-0"', ratio: 8   },
+  { label: '3" = 1\'-0"',     ratio: 4   },
+  // ── Engineering / civil scales (ratio = 12 × feet-per-inch) ──
+  { label: '1" = 10\'-0"',    ratio: 120 },
+  { label: '1" = 20\'-0"',    ratio: 240 },
+  { label: '1" = 30\'-0"',    ratio: 360 },
+  { label: '1" = 40\'-0"',    ratio: 480 },
+  { label: '1" = 50\'-0"',    ratio: 600 },
+  { label: '1" = 60\'-0"',    ratio: 720 },
+  { label: '1" = 100\'-0"',   ratio: 1200 },
 ];
 
 const SUMMARY_ROWS = [
@@ -136,6 +150,7 @@ export default function Home() {
   const [pageImageCache, setPageImageCache]   = useState<Record<number, string>>({});
   const [pageDataCache, setPageDataCache]     = useState<Record<number, {
     members: Member[]; summary: Summary | null; status: "not_set" | "estimating" | "built";
+    ratioUsed?: number | null;   // scale ratio this result was computed at
   }>>({});
   const [pageLoading, setPageLoading]         = useState(false);
   const [extracting, setExtracting]           = useState(false);
@@ -383,7 +398,7 @@ export default function Home() {
       // Cache per-page so switching back restores results
       setPageDataCache(prev => ({
         ...prev,
-        [pageIdx]: { members: data.members, summary: data.summary, status: "built" },
+        [pageIdx]: { members: data.members, summary: data.summary, status: "built", ratioUsed: ratio },
       }));
       showToast("green", `Blueprint built in ${data.elapsed_seconds ?? data.elapsed ?? 0}s`);
       setTimeout(() => setToast(null), 4000);
@@ -400,6 +415,10 @@ export default function Home() {
     setSelectedScale(label);
     setSelectedRatio(ratio);
     setScaleOpen(false);
+    // Every cached page result was computed at the PREVIOUS scale and is now
+    // stale.  Clear the cache so switching to another page re-extracts at the
+    // new scale instead of restoring wrong-scale members.
+    setPageDataCache({});
     runAnalysis(ratio, currentPageIdx);
   }
 
@@ -413,10 +432,11 @@ export default function Home() {
   async function switchPage(newIdx: number) {
     if (newIdx === currentPageIdx || pageLoading || extracting) return;
 
-    // Persist current page data so switching back restores it
+    // Persist current page data (with the scale it was computed at) so
+    // switching back restores it only when the scale still matches.
     setPageDataCache(prev => ({
       ...prev,
-      [currentPageIdx]: { members, summary: baseSummary, status },
+      [currentPageIdx]: { members, summary: baseSummary, status, ratioUsed: selectedRatio },
     }));
 
     setCurrentPageIdx(newIdx);
@@ -426,11 +446,18 @@ export default function Home() {
     // Restore cached extraction for the new page (if already extracted).
     // pageDataCache is captured from current render — safe to read directly
     // since switchPage is not memoized and always sees the latest cache.
+    // Restore cached result ONLY if it was computed at the current scale.
+    // A cache entry from a different scale is stale — re-extract instead of
+    // showing wrong-scale members (the root cause of "I picked the right
+    // scale but it still extracts wrong").
     const cached = pageDataCache[newIdx];
-    if (cached) {
+    if (cached && cached.status === "built" && cached.ratioUsed === selectedRatio) {
       setMembers(cached.members);
       setBaseSummary(cached.summary);
       setStatus(cached.status);
+    } else if (selectedRatio) {
+      // No valid cache at the current scale → auto-extract this page at it.
+      runAnalysis(selectedRatio, newIdx);
     } else {
       setMembers([]);
       setBaseSummary(null);
@@ -669,7 +696,8 @@ export default function Home() {
                 <div style={{
                   position: "absolute", top: "100%", left: 0, right: 0,
                   backgroundColor: "#0F172A", border: "1px solid #334155", borderRadius: "6px",
-                  zIndex: 100, overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                  zIndex: 100, maxHeight: "260px", overflowY: "auto",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
                 }}>
                   {SCALE_OPTIONS.map(opt => (
                     <div key={opt.label} onClick={() => handleScaleSelect(opt.label, opt.ratio)}
