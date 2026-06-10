@@ -3393,6 +3393,106 @@ def add_unlabeled_beam_candidates(members, all_lines, v_grid, h_grid,
     return members
 
 
+def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
+                                  page_w, page_h, pts_per_foot):
+    """UNIVERSAL unlabeled-beam detection — works at ANY label count.
+
+    The zero-profile synthetic path (orthogonal / not >85 % plan / 40-pt dedup
+    / cap 200) only fired when a sheet had ZERO labels.  On a sheet with 1, 3,
+    or a handful of labels it never ran, so most beam lines were missed.
+
+    This generalises that exact logic to ANY label count via a COVERAGE test:
+    every structural beam line that is NOT already claimed by a labeled beam
+    becomes a (beam?) candidate.  So 0, 1, 3, or 188 labels all behave the
+    same — labeled beams are never double-counted, and every remaining drawn
+    beam line is flagged.
+
+    Same filters the 200-beam path used:
+      • orthogonal only (H / V)               (diagonals = braces, skipped)
+      • length < 85 % of plan width/height    (full-span = grid/dimension line)
+      • 40-pt midpoint dedup
+      • hard cap 200
+      • PLUS coverage check against labeled beams (no duplicates)
+    """
+    if not all_struct_lns or not plan_bounds:
+        return members
+    ppf = pts_per_foot if pts_per_foot > 0 else 9.0
+    pb0x, pb0y, pb1x, pb1y = plan_bounds
+    plan_w, plan_h = pb1x - pb0x, pb1y - pb0y
+    MAX_H_FRAC = 0.85
+    MAX_V_FRAC = 0.85
+    DEDUP_R    = 40.0
+    CAP        = 200
+
+    # Labeled beam centerlines already built into members (exclude any prior
+    # unlabeled candidates so coverage is measured only against real labels).
+    lab = [(m["bx1"] * page_w, m["by1"] * page_h,
+            m["bx2"] * page_w, m["by2"] * page_h)
+           for m in members
+           if m.get("type") == "beam" and m.get("bx1") is not None
+           and not m.get("unlabeled")]
+
+    def _covered(lx1, ly1, lx2, ly2):
+        """True if this line coincides with a labeled beam (already extracted)."""
+        L = math.hypot(lx2 - lx1, ly2 - ly1) or 1.0
+        ux, uy = (lx2 - lx1) / L, (ly2 - ly1) / L
+        for (ax1, ay1, ax2, ay2) in lab:
+            aL = math.hypot(ax2 - ax1, ay2 - ay1) or 1.0
+            if abs(((ax2 - ax1) * ux + (ay2 - ay1) * uy) / aL) < 0.96:
+                continue                      # not parallel
+            if abs((ax1 - lx1) * (-uy) + (ay1 - ly1) * ux) > 18:
+                continue                      # too far perpendicular
+            t1 = (ax1 - lx1) * ux + (ay1 - ly1) * uy
+            t2 = (ax2 - lx1) * ux + (ay2 - ly1) * uy
+            if min(L, max(t1, t2)) - max(0.0, min(t1, t2)) > 0.4 * L:
+                return True                   # overlaps the labeled beam
+        return False
+
+    seen, n = [], 0
+    for (lx1, ly1, lx2, ly2, ln) in all_struct_lns:
+        if n >= CAP:
+            break
+        adx, ady = abs(lx2 - lx1), abs(ly2 - ly1)
+        # orthogonal only + reject full-span grid/dimension lines
+        if adx > ady * 2:
+            bdir = "H"
+            if adx > plan_w * MAX_H_FRAC:
+                continue
+        elif ady > adx * 2:
+            bdir = "V"
+            if ady > plan_h * MAX_V_FRAC:
+                continue
+        else:
+            continue                          # diagonal → skip
+        mx, my = (lx1 + lx2) / 2, (ly1 + ly2) / 2
+        # midpoint dedup
+        if any(math.hypot(mx - sx, my - sy) < DEDUP_R for sx, sy in seen):
+            continue
+        # coverage — skip lines already claimed by a labeled beam
+        if _covered(lx1, ly1, lx2, ly2):
+            continue
+        seen.append((mx, my))
+        Lft = ln / ppf
+        members.append({
+            "profile": "(beam?)", "type": "beam",
+            "length_ft": round(Lft, 1),
+            "beam_dir": bdir,
+            "bx1": round(lx1 / page_w, 4), "by1": round(ly1 / page_h, 4),
+            "bx2": round(lx2 / page_w, 4), "by2": round(ly2 / page_h, 4),
+            "x":  round(mx / page_w, 4),   "y":  round(my / page_h, 4),
+            "lx": round(mx / page_w, 4),   "ly": round(my / page_h, 4),
+            "sx": None, "sy": None, "w": 0.025, "h": 0.012,
+            "color": "#F59E0B",
+            "confirmed": False, "is_column": False,
+            "unlabeled": True, "confidence": "low",
+        })
+        n += 1
+
+    print(f"[UNLABELED] {n} universal (beam?) candidates "
+          f"(uncovered beam lines, any label count)")
+    return members
+
+
 def emit_symbol_columns(members, column_symbols, v_grid, h_grid,
                         page_w, page_h):
     """Emit a COLUMN member for each detected column symbol that sits at a grid
@@ -4148,12 +4248,13 @@ async def analyse_pdf(req: AnalysisRequest):
         # Unlabeled beams: geometry-detected candidates with no section callout.
         # Gated by detect_unlabeled flag (default OFF) so the UI stays clean
         # unless the user explicitly requests candidate overlay.
+        # UNIVERSAL path: flags every uncovered structural beam line (any label
+        # count) — not just the conservative double-line/single-line subset.
         _lines_w = collect_line_widths(page, plan_bounds) if not is_raster else []
         if not is_raster and req.detect_unlabeled:
-            members = add_unlabeled_beam_candidates(
-                members, _lines_w, v_grid, h_grid,
-                plan_bounds, page_w, page_h, pts_per_foot,
-                column_symbols=column_symbols)
+            members = add_unlabeled_lines_universal(
+                members, _all_struct_lns,
+                plan_bounds, page_w, page_h, pts_per_foot)
 
         # Render-only: snap EVERY overlay line (labeled + unlabeled candidates)
         # onto the THICK (dark) beam centreline.  Runs LAST so candidates are

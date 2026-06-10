@@ -154,6 +154,7 @@ export default function Home() {
   }>>({});
   const [pageLoading, setPageLoading]         = useState(false);
   const [extracting, setExtracting]           = useState(false);
+  const [showUnlabelled, setShowUnlabelled]   = useState(false);
 
   const fileInputRef       = useRef<HTMLInputElement>(null);
   const imageWrapperRef    = useRef<HTMLDivElement>(null);
@@ -375,18 +376,19 @@ export default function Home() {
   }
 
   // ── CORE ANALYSIS (shared by scale-select and extract button) ────────────
-  async function runAnalysis(ratio: number, pageIdx: number) {
+  async function runAnalysis(ratio: number, pageIdx: number, detectUnlabelled?: boolean) {
+    const useUnlabelled = detectUnlabelled !== undefined ? detectUnlabelled : showUnlabelled;
     setExtracting(true);
     setStatus("estimating");
     setMembers([]);
-    showToast("blue", "Building blueprint. Please wait...");
+    showToast("blue", useUnlabelled ? "Building blueprint with unlabelled beams..." : "Building blueprint. Please wait...");
     try {
       const controller = new AbortController();
       const timeoutId  = setTimeout(() => controller.abort("Timeout"), 120000);
       const res = await fetch("http://localhost:8000/analyse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename, scale_ratio: ratio, page_index: pageIdx, ocr_dpi: 400 }),
+        body: JSON.stringify({ filename, scale_ratio: ratio, page_index: pageIdx, ocr_dpi: 400, detect_unlabeled: useUnlabelled }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -723,6 +725,32 @@ export default function Home() {
               }}>
                 {status === "built" ? "Built" : status === "estimating" ? "Estimating" : "Not Set"}
               </span>
+            </div>
+
+            {/* Unlabelled beams toggle */}
+            <div style={{ padding: "0 4px", marginBottom: "8px" }}>
+              <button
+                onClick={() => {
+                  const next = !showUnlabelled;
+                  setShowUnlabelled(next);
+                  if (selectedRatio) runAnalysis(selectedRatio, currentPageIdx, next);
+                }}
+                disabled={extracting}
+                title="Show/hide unlabelled beams detected from drawn geometry"
+                style={{
+                  width: "100%", borderRadius: "5px", padding: "6px 0",
+                  fontSize: "11px", fontWeight: "600",
+                  cursor: extracting ? "not-allowed" : "pointer",
+                  backgroundColor: showUnlabelled ? "#7C3AED" : "#1E293B",
+                  color: showUnlabelled ? "white" : "#94A3B8",
+                  border: `1px solid ${showUnlabelled ? "#8B5CF6" : "#334155"}`,
+                  transition: "all 0.15s",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+                }}
+              >
+                <span style={{ fontSize: "10px" }}>{showUnlabelled ? "●" : "○"}</span>
+                {showUnlabelled ? "Unlabelled ON" : "Unlabelled OFF"}
+              </button>
             </div>
 
             {/* Extract button */}
@@ -1210,6 +1238,20 @@ export default function Home() {
                 <div style={{ width: "10px", height: "10px", border: "1px dashed #FBBF24", borderRadius: "2px" }} />
                 <span style={{ color: "#FBBF24", fontSize: "11px" }}>Corrected</span>
               </div>
+              {showUnlabelled && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ position: "relative", width: "36px", height: "14px" }}>
+                    <div style={{ position: "absolute", top: "6px", left: 0, right: 0, height: "2px", backgroundColor: "#F59E0B", opacity: 0.75, borderRadius: "1px" }} />
+                    <div style={{
+                      position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+                      backgroundColor: "#78350F88", border: "1px solid #F59E0B",
+                      borderRadius: "3px", padding: "0 3px",
+                      fontSize: "7px", fontWeight: "700", color: "white", whiteSpace: "nowrap",
+                    }}>beam?</div>
+                  </div>
+                  <span style={{ color: "#F59E0B", fontSize: "11px" }}>Unlabelled</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
