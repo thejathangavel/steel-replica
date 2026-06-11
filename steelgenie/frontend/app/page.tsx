@@ -63,14 +63,28 @@ const MEMBER_COLORS: Record<string, string> = {
 const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 
 const SCALE_OPTIONS = [
-  { label: '1/32" = 1\'-0"', ratio: 384 },
-  { label: '3/64" = 1\'-0"', ratio: 256 },
-  { label: '1/16" = 1\'-0"', ratio: 192 },
-  { label: '3/32" = 1\'-0"', ratio: 128 },
-  { label: '1/8" = 1\'-0"',  ratio: 96  },
-  { label: '3/16" = 1\'-0"', ratio: 64  },
-  { label: '1/4" = 1\'-0"',  ratio: 48  },
-  { label: '3/8" = 1\'-0"',  ratio: 32  },
+  // ── Architectural scales (ratio = 12 / paper-inches-per-foot) ──
+  { label: '1/32" = 1\'-0"',  ratio: 384 },
+  { label: '3/64" = 1\'-0"',  ratio: 256 },
+  { label: '1/16" = 1\'-0"',  ratio: 192 },
+  { label: '3/32" = 1\'-0"',  ratio: 128 },
+  { label: '1/8" = 1\'-0"',   ratio: 96  },
+  { label: '3/16" = 1\'-0"',  ratio: 64  },
+  { label: '1/4" = 1\'-0"',   ratio: 48  },
+  { label: '3/8" = 1\'-0"',   ratio: 32  },
+  { label: '1/2" = 1\'-0"',   ratio: 24  },
+  { label: '3/4" = 1\'-0"',   ratio: 16  },
+  { label: '1" = 1\'-0"',     ratio: 12  },
+  { label: '1-1/2" = 1\'-0"', ratio: 8   },
+  { label: '3" = 1\'-0"',     ratio: 4   },
+  // ── Engineering / civil scales (ratio = 12 × feet-per-inch) ──
+  { label: '1" = 10\'-0"',    ratio: 120 },
+  { label: '1" = 20\'-0"',    ratio: 240 },
+  { label: '1" = 30\'-0"',    ratio: 360 },
+  { label: '1" = 40\'-0"',    ratio: 480 },
+  { label: '1" = 50\'-0"',    ratio: 600 },
+  { label: '1" = 60\'-0"',    ratio: 720 },
+  { label: '1" = 100\'-0"',   ratio: 1200 },
 ];
 
 const SUMMARY_ROWS = [
@@ -93,6 +107,8 @@ export default function Home() {
   const [pdfImage, setPdfImage]           = useState<string | null>(null);
   const [filename, setFilename]           = useState("");
   const [pageCount, setPageCount]         = useState(0);
+  const [pageThumbnails, setPageThumbnails] = useState<string[]>([]);
+  const [selectedPageIndex, setSelectedPageIndex] = useState(0);
   const [uploading, setUploading]         = useState(false);
   const [uploadStage, setUploadStage]     = useState<"sending"|"processing"|null>(null);
   const [dragging, setDragging]           = useState(false);
@@ -119,6 +135,9 @@ export default function Home() {
   const [markerDots, setMarkerDots]       = useState<{x:number;y:number}[]>([]);
   const [rulerLines, setRulerLines]       = useState<{x1:number;y1:number;x2:number;y2:number}[]>([]);
   const [undoStack, setUndoStack]         = useState<Array<"marker"|"ruler">>([]);
+  // Pixel dimensions of the image wrapper — used to compute correct visual
+  // beam angles from fraction-based bx/by endpoints (angle depends on aspect ratio).
+  const [wrapperSize, setWrapperSize]     = useState({ w: 1, h: 1 });
   const [showSaveModal, setShowSaveModal]         = useState(false);
   const [saveProjectName, setSaveProjectName]     = useState("");
   const [saveLoading, setSaveLoading]             = useState(false);
@@ -128,10 +147,10 @@ export default function Home() {
 
   // ── MULTI-PAGE ────────────────────────────────────────────────────────────
   const [currentPageIdx, setCurrentPageIdx]   = useState(0);
-  const [pageThumbnails, setPageThumbnails]   = useState<string[]>([]);
   const [pageImageCache, setPageImageCache]   = useState<Record<number, string>>({});
   const [pageDataCache, setPageDataCache]     = useState<Record<number, {
     members: Member[]; summary: Summary | null; status: "not_set" | "estimating" | "built";
+    ratioUsed?: number | null;   // scale ratio this result was computed at
   }>>({});
   const [pageLoading, setPageLoading]         = useState(false);
   const [extracting, setExtracting]           = useState(false);
@@ -204,6 +223,20 @@ export default function Home() {
     setMembers(prev => prev.filter((_, i) => i !== idx));
     setContextMenu(null);
   }
+
+  // ── WRAPPER SIZE TRACKER (for diagonal beam angle computation) ───────────
+  useEffect(() => {
+    const el = imageWrapperRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(entries => {
+      const rect = entries[0]?.contentRect;
+      if (rect) setWrapperSize({ w: rect.width || 1, h: rect.height || 1 });
+    });
+    obs.observe(el);
+    // Set initial size immediately
+    setWrapperSize({ w: el.clientWidth || 1, h: el.clientHeight || 1 });
+    return () => obs.disconnect();
+  }, []);
 
   // ── ZOOM ──────────────────────────────────────────────────────────────────
   function stepZoom(dir: 1 | -1) {
@@ -319,6 +352,8 @@ export default function Home() {
       setPdfImage(data.image);
       setFilename(data.filename);
       setPageCount(data.page_count);
+      setPageThumbnails(data.thumbnails || [data.image]);
+      setSelectedPageIndex(0);
       setStatus("not_set");
       setMembers([]);
       setBaseSummary(null);
@@ -363,7 +398,7 @@ export default function Home() {
       // Cache per-page so switching back restores results
       setPageDataCache(prev => ({
         ...prev,
-        [pageIdx]: { members: data.members, summary: data.summary, status: "built" },
+        [pageIdx]: { members: data.members, summary: data.summary, status: "built", ratioUsed: ratio },
       }));
       showToast("green", `Blueprint built in ${data.elapsed_seconds ?? data.elapsed ?? 0}s`);
       setTimeout(() => setToast(null), 4000);
@@ -380,6 +415,10 @@ export default function Home() {
     setSelectedScale(label);
     setSelectedRatio(ratio);
     setScaleOpen(false);
+    // Every cached page result was computed at the PREVIOUS scale and is now
+    // stale.  Clear the cache so switching to another page re-extracts at the
+    // new scale instead of restoring wrong-scale members.
+    setPageDataCache({});
     runAnalysis(ratio, currentPageIdx);
   }
 
@@ -393,10 +432,11 @@ export default function Home() {
   async function switchPage(newIdx: number) {
     if (newIdx === currentPageIdx || pageLoading || extracting) return;
 
-    // Persist current page data so switching back restores it
+    // Persist current page data (with the scale it was computed at) so
+    // switching back restores it only when the scale still matches.
     setPageDataCache(prev => ({
       ...prev,
-      [currentPageIdx]: { members, summary: baseSummary, status },
+      [currentPageIdx]: { members, summary: baseSummary, status, ratioUsed: selectedRatio },
     }));
 
     setCurrentPageIdx(newIdx);
@@ -406,11 +446,18 @@ export default function Home() {
     // Restore cached extraction for the new page (if already extracted).
     // pageDataCache is captured from current render — safe to read directly
     // since switchPage is not memoized and always sees the latest cache.
+    // Restore cached result ONLY if it was computed at the current scale.
+    // A cache entry from a different scale is stale — re-extract instead of
+    // showing wrong-scale members (the root cause of "I picked the right
+    // scale but it still extracts wrong").
     const cached = pageDataCache[newIdx];
-    if (cached) {
+    if (cached && cached.status === "built" && cached.ratioUsed === selectedRatio) {
       setMembers(cached.members);
       setBaseSummary(cached.summary);
       setStatus(cached.status);
+    } else if (selectedRatio) {
+      // No valid cache at the current scale → auto-extract this page at it.
+      runAnalysis(selectedRatio, newIdx);
     } else {
       setMembers([]);
       setBaseSummary(null);
@@ -503,6 +550,7 @@ export default function Home() {
 
   function handleReset() {
     setPdfImage(null); setFilename(""); setPageCount(0);
+    setPageThumbnails([]); setSelectedPageIndex(0);
     setStatus("not_set"); setMembers([]); setBaseSummary(null);
     setSelectedScale(null); setSelectedRatio(null);
     setToast(null); setZoomLevel(1); setContextMenu(null);
@@ -648,7 +696,8 @@ export default function Home() {
                 <div style={{
                   position: "absolute", top: "100%", left: 0, right: 0,
                   backgroundColor: "#0F172A", border: "1px solid #334155", borderRadius: "6px",
-                  zIndex: 100, overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                  zIndex: 100, maxHeight: "260px", overflowY: "auto",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
                 }}>
                   {SCALE_OPTIONS.map(opt => (
                     <div key={opt.label} onClick={() => handleScaleSelect(opt.label, opt.ratio)}
@@ -966,6 +1015,20 @@ export default function Home() {
                     }
                   }
 
+                  // Compute visual angle of beam line so the chip rotates
+                  // to align with the actual drawn line direction.
+                  // Uses the wrapper pixel dimensions so the angle is correct
+                  // regardless of page aspect ratio or zoom level.
+                  let chipAngle = 0;
+                  if (isBeam && m.bx1 != null && m.bx2 != null && m.by1 != null && m.by2 != null) {
+                    const dx = (m.bx2 - m.bx1) * wrapperSize.w;
+                    const dy = (m.by2 - m.by1) * wrapperSize.h;
+                    chipAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+                    // Normalise to [-90°, 90°] so text always reads left→right
+                    if (chipAngle >  90) chipAngle -= 180;
+                    if (chipAngle < -90) chipAngle += 180;
+                  }
+
                   return (
                     <div
                       key={idx}
@@ -973,7 +1036,9 @@ export default function Home() {
                         position: "absolute",
                         left: `${anchorX * 100}%`,
                         top:  `${anchorY * 100}%`,
-                        transform: "translate(-50%, -50%)",
+                        transform: chipAngle !== 0
+                          ? `translate(-50%, -50%) rotate(${chipAngle.toFixed(2)}deg)`
+                          : "translate(-50%, -50%)",
                         zIndex: 20, cursor: "pointer",
                       }}
                       onMouseEnter={e => { setHoveredMember(m); setTooltipPos({ x: e.clientX + 14, y: e.clientY - 36 }); }}
@@ -1031,15 +1096,10 @@ export default function Home() {
                           boxShadow: isHov ? `0 0 6px ${m.color}` : "0 1px 3px rgba(0,0,0,0.5)",
                           transition: "all 0.1s",
                           letterSpacing: "0.02em",
-                          writingMode: m.beam_dir === "V" ? "vertical-rl" : undefined,
                         }}>
                           {m.profile}
                           {m.length_ft > 0 && (
-                            <span style={{
-                              color: "#FBD0E8", fontWeight: 400,
-                              marginLeft: m.beam_dir === "V" ? "0" : "3px",
-                              marginTop:  m.beam_dir === "V" ? "2px" : "0",
-                            }}>
+                            <span style={{ color: "#FBD0E8", fontWeight: 400, marginLeft: "3px" }}>
                               {formatFt(m.length_ft)}
                             </span>
                           )}
