@@ -3394,38 +3394,69 @@ def add_unlabeled_beam_candidates(members, all_lines, v_grid, h_grid,
 
 
 def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
-                                  page_w, page_h, pts_per_foot):
+                                  page_w, page_h, pts_per_foot,
+                                  v_grid=None, h_grid=None,
+                                  column_symbols=None):
     """UNIVERSAL unlabeled-beam detection — works at ANY label count.
 
-    The zero-profile synthetic path (orthogonal / not >85 % plan / 40-pt dedup
-    / cap 200) only fired when a sheet had ZERO labels.  On a sheet with 1, 3,
-    or a handful of labels it never ran, so most beam lines were missed.
+    Every structural beam line that is NOT already claimed by a labeled beam
+    becomes a (beam?) candidate.  Strict false-positive filters ensure only
+    genuine structural framing members are flagged — dimension lines, column
+    stubs, wall lines, and grid lines are rejected.
 
-    This generalises that exact logic to ANY label count via a COVERAGE test:
-    every structural beam line that is NOT already claimed by a labeled beam
-    becomes a (beam?) candidate.  So 0, 1, 3, or 188 labels all behave the
-    same — labeled beams are never double-counted, and every remaining drawn
-    beam line is flagged.
-
-    Same filters the 200-beam path used:
-      • orthogonal only (H / V)               (diagonals = braces, skipped)
-      • length < 85 % of plan width/height    (full-span = grid/dimension line)
-      • 40-pt midpoint dedup
-      • hard cap 200
-      • PLUS coverage check against labeled beams (no duplicates)
+    Filters applied (in order):
+      F1  Orthogonal only (H / V) — diagonals are braces, not beams.
+      F2  Length < 75 % of plan width (H) or height (V) — full-span = grid line.
+      F3  Minimum span ≥ 5 ft — stubs / connection plates are shorter.
+      F4  Both endpoints must land at a real column position (grid intersection
+          or detected column symbol).  This single gate eliminates:
+            • dimension lines  (endpoints at annotation ticks, not columns)
+            • wall / CMU lines (endpoints at walls, not grid intersections)
+            • column stub lines (both ends inside the same column footprint)
+          When no grid/symbol data exists the check is skipped (safe fallback).
+      F5  Midpoint dedup — one candidate per 40-pt slot.
+      F6  Coverage — skip if a labeled beam already occupies this centreline.
+      F7  Hard cap 200.
     """
     if not all_struct_lns or not plan_bounds:
         return members
     ppf = pts_per_foot if pts_per_foot > 0 else 9.0
     pb0x, pb0y, pb1x, pb1y = plan_bounds
     plan_w, plan_h = pb1x - pb0x, pb1y - pb0y
-    MAX_H_FRAC = 0.85
-    MAX_V_FRAC = 0.85
+    MAX_H_FRAC = 0.75   # tightened from 0.85 — long dimension lines span ~80 %
+    MAX_V_FRAC = 0.75
     DEDUP_R    = 40.0
     CAP        = 200
+    MIN_FT     = 5.0    # F3: beams shorter than 5 ft are stubs / conn. plates
 
-    # Labeled beam centerlines already built into members (exclude any prior
-    # unlabeled candidates so coverage is measured only against real labels).
+    # ── F4: column-endpoint check ─────────────────────────────────────────────
+    # Build augmented column X / Y position lists from grid lines + symbols.
+    # Grid lines mark column centrelines; symbols mark individual columns.
+    _col_xs = sorted(set(
+        [float(x) for x in (v_grid or [])] +
+        [s["cx"] for s in (column_symbols or [])]
+    ))
+    _col_ys = sorted(set(
+        [float(y) for y in (h_grid or [])] +
+        [s["cy"] for s in (column_symbols or [])]
+    ))
+    _has_col_data = bool(_col_xs and _col_ys)
+
+    # Tolerance: 36 pt ≈ 4 ft at 1/8" scale.  Generous enough to bridge a
+    # drawn-endpoint → column-centre gap without crossing to the next bay
+    # (typical minimum steel bay is ~8 ft, so 4 ft is well inside one bay).
+    COL_TOL = max(36.0, ppf * 0.5)
+
+    def _at_col(ex, ey):
+        """True if (ex, ey) is at a column position (grid intersection or symbol)."""
+        if not _has_col_data:
+            return True   # no grid data → skip check (safe: no false rejections)
+        return (min(abs(ex - x) for x in _col_xs) < COL_TOL and
+                min(abs(ey - y) for y in _col_ys) < COL_TOL)
+
+    # ── Coverage check against already-extracted labeled beams ────────────────
+    # Exclude any prior unlabeled candidates so coverage is measured only
+    # against real labels — prevents cascading self-suppression.
     lab = [(m["bx1"] * page_w, m["by1"] * page_h,
             m["bx2"] * page_w, m["by2"] * page_h)
            for m in members
@@ -3449,28 +3480,77 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
         return False
 
     seen, n = [], 0
+    rejected_col, rejected_len, rejected_dir = 0, 0, 0
     for (lx1, ly1, lx2, ly2, ln) in all_struct_lns:
         if n >= CAP:
             break
         adx, ady = abs(lx2 - lx1), abs(ly2 - ly1)
-        # orthogonal only + reject full-span grid/dimension lines
+
+        # F1: orthogonal only + F2: reject near-full-plan-width/height lines
         if adx > ady * 2:
             bdir = "H"
             if adx > plan_w * MAX_H_FRAC:
+                rejected_dir += 1
                 continue
         elif ady > adx * 2:
             bdir = "V"
             if ady > plan_h * MAX_V_FRAC:
+                rejected_dir += 1
                 continue
         else:
+            rejected_dir += 1
             continue                          # diagonal → skip
+
+        # F3: minimum structural length
+        if ln / ppf < MIN_FT:
+            rejected_len += 1
+            continue
+
+        # F4: BOTH endpoints must be at a real column position.
+        # This is the primary false-positive gate — dimension lines, wall lines,
+        # and grid lines do NOT span column-to-column in both axes.
+        if not (_at_col(lx1, ly1) and _at_col(lx2, ly2)):
+            rejected_col += 1
+            continue
+
+        # ── Column-centreline snap ────────────────────────────────────────────
+        # Beams are drawn column-FACE to column-FACE in CAD (the clear span),
+        # but we display column-CENTRE to column-CENTRE (the overall span).
+        # Snap each endpoint to the nearest column grid position — identical to
+        # Pass 3d in detect_beam_lines — so unlabelled lines reach exactly
+        # column-to-column, matching labelled beam behaviour.
+        # Only snap when the two ends target DIFFERENT column positions so we
+        # never collapse both endpoints onto the same column.
+        if _has_col_data:
+            if bdir == "H" and _col_xs:
+                _gx1 = min(_col_xs, key=lambda gx: abs(lx1 - gx))
+                _gx2 = min(_col_xs, key=lambda gx: abs(lx2 - gx))
+                if abs(_gx1 - _gx2) > 5:
+                    if abs(lx1 - _gx1) <= COL_TOL:
+                        lx1 = _gx1
+                    if abs(lx2 - _gx2) <= COL_TOL:
+                        lx2 = _gx2
+            elif bdir == "V" and _col_ys:
+                _gy1 = min(_col_ys, key=lambda gy: abs(ly1 - gy))
+                _gy2 = min(_col_ys, key=lambda gy: abs(ly2 - gy))
+                if abs(_gy1 - _gy2) > 5:
+                    if abs(ly1 - _gy1) <= COL_TOL:
+                        ly1 = _gy1
+                    if abs(ly2 - _gy2) <= COL_TOL:
+                        ly2 = _gy2
+
+        # Recompute midpoint + length after snap
         mx, my = (lx1 + lx2) / 2, (ly1 + ly2) / 2
-        # midpoint dedup
+        ln = math.hypot(lx2 - lx1, ly2 - ly1)
+
+        # F5: midpoint dedup
         if any(math.hypot(mx - sx, my - sy) < DEDUP_R for sx, sy in seen):
             continue
-        # coverage — skip lines already claimed by a labeled beam
+
+        # F6: coverage — skip lines already claimed by a labeled beam
         if _covered(lx1, ly1, lx2, ly2):
             continue
+
         seen.append((mx, my))
         Lft = ln / ppf
         members.append({
@@ -3489,7 +3569,7 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
         n += 1
 
     print(f"[UNLABELED] {n} universal (beam?) candidates "
-          f"(uncovered beam lines, any label count)")
+          f"(rejected: dir/len={rejected_dir+rejected_len} col_gate={rejected_col})")
     return members
 
 
@@ -3634,7 +3714,8 @@ def trim_beam_overshoot(members, page_w, page_h, pts_per_foot,
     _cx_max = max(_cx) if _cx else None
     _cy_min = min(_cy) if _cy else None
     _cy_max = max(_cy) if _cy else None
-    EDGE_TOL = COL_ZONE * 1.5            # allow a small overshoot past last col
+    EDGE_TOL = COL_ZONE * 0.5            # tightened: only tiny cantilever gap allowed
+    _n_b2b = 0                          # diagnostic: count of beams trimmed
 
     for m, ax1, ay1, ax2, ay2 in segs:
         L = math.hypot(ax2 - ax1, ay2 - ay1)
@@ -3668,28 +3749,38 @@ def trim_beam_overshoot(members, page_w, page_h, pts_per_foot,
             if (not _A_at_col) and MIN_TRIM < t <= MAX_TRIM and t < L * 0.5:
                 new_t0 = min(max(new_t0, t), MAX_TRIM)
 
-        # ── edge-boundary trim: clamp to outermost column line ────────────────
-        # Handles CMU-wall pocket beams and curtain-wall edges where no
-        # perpendicular framing beam exists to trigger the main trim above.
+        # ── edge-boundary clamp: clamp to outermost column line ───────────────
+        # Beyond the OUTERMOST detected column line there is provably no structure
+        # to frame into, so ANY endpoint protruding past it (more than EDGE_TOL)
+        # is pure overshoot — clamp it straight back to that line with NO MAX_TRIM
+        # cap.  This is what kills the perimeter overshoot (corner/edge beams that
+        # stick out >6 ft past the last column, which the girder trim's 6 ft cap
+        # let through).  The girder trim above keeps its cap because a long real
+        # span CAN exist between two interior girders; out here it cannot.  A real
+        # cantilever overhang stays within EDGE_TOL and is left alone.
         if _is_h:
             if _cx_min is not None and ax1 < _cx_min - EDGE_TOL and not _A_at_col:
                 t_edge = _cx_min - ax1
-                if MIN_TRIM < t_edge < MAX_TRIM:
-                    new_t0 = min(max(new_t0, t_edge), MAX_TRIM)
+                if t_edge > MIN_TRIM:
+                    new_t0 = max(new_t0, t_edge)
             if _cx_max is not None and ax2 > _cx_max + EDGE_TOL and not _B_at_col:
                 t_edge = L - (_cx_max - ax1)
-                if MIN_TRIM < t_edge < MAX_TRIM:
-                    new_tL = max(min(new_tL, L - t_edge), L - MAX_TRIM)
+                if t_edge > MIN_TRIM:
+                    new_tL = min(new_tL, L - t_edge)
         else:
             if _cy_min is not None and ay1 < _cy_min - EDGE_TOL and not _A_at_col:
                 t_edge = _cy_min - ay1
-                if MIN_TRIM < t_edge < MAX_TRIM:
-                    new_t0 = min(max(new_t0, t_edge), MAX_TRIM)
+                if t_edge > MIN_TRIM:
+                    new_t0 = max(new_t0, t_edge)
             if _cy_max is not None and ay2 > _cy_max + EDGE_TOL and not _B_at_col:
                 t_edge = L - (_cy_max - ay1)
-                if MIN_TRIM < t_edge < MAX_TRIM:
-                    new_tL = max(min(new_tL, L - t_edge), L - MAX_TRIM)
-        if new_t0 > 0 or new_tL < L:
+                if t_edge > MIN_TRIM:
+                    new_tL = min(new_tL, L - t_edge)
+        # Safety: never let the combined trims collapse a beam to a sliver.  If
+        # they would leave less than a real minimum span (3 ft), the outermost-
+        # column estimate is more likely wrong than the beam — leave it untouched.
+        MIN_SPAN = 3.0 * ppf
+        if (new_t0 > 0 or new_tL < L) and (new_tL - new_t0) >= MIN_SPAN:
             nx1, ny1 = ax1 + ux * new_t0, ay1 + uy * new_t0
             nx2, ny2 = ax1 + ux * new_tL, ay1 + uy * new_tL
             m["bx1"] = round(nx1 / page_w, 4); m["by1"] = round(ny1 / page_h, 4)
@@ -3697,6 +3788,130 @@ def trim_beam_overshoot(members, page_w, page_h, pts_per_foot,
             m["x"] = round((nx1 + nx2) / 2 / page_w, 4)
             m["y"] = round((ny1 + ny2) / 2 / page_h, 4)
             m["length_ft"] = round(math.hypot(nx2 - nx1, ny2 - ny1) / ppf, 1)
+            _n_b2b += 1
+    print(f"[TRIM] columns: {len(_cx)} X / {len(_cy)} Y  |  beams trimmed: {_n_b2b}")
+    return members
+
+
+def snap_beam_ends_to_supports(members, all_struct_lns, col_x, col_y,
+                               page_w, page_h, pts_per_foot):
+    """UNIVERSAL endpoint rule: a beam runs SUPPORT-to-SUPPORT.
+
+    Real framing data shows ~70 % of beams have NO column on their body — they
+    frame girder-to-girder or girder-to-column.  So an endpoint must terminate
+    at the nearest PERPENDICULAR structural line it reaches — a column grid line
+    OR a crossing girder (a perpendicular drawn beam line) — and STOP there.
+
+    For each endpoint we look at every perpendicular support crossing within a
+    search window and snap to the one nearest that endpoint.  This both TRIMS
+    overshoot (endpoint sits past the support → pull in) and CLOSES short gaps
+    (endpoint stops short of the support → push out) — symmetric, exactly how a
+    correctly-drawn labeled girder already terminates.  This is what makes the
+    overlay "touch the perpendicular line and stop" on every beam, labeled or not.
+
+    Safety: never collapses a beam below MIN_SPAN; only moves an endpoint when a
+    genuine perpendicular support exists within the window (otherwise left as-is).
+    """
+    if not members:
+        return members
+    ppf      = pts_per_foot if pts_per_foot > 0 else 9.0
+    # Asymmetric window.  Trimming INWARD is safe to do generously: when a beam
+    # overshoots its support the gap beyond the support is empty, so the nearest
+    # crossing found inward IS the true support even for big overshoots.  EXTENDING
+    # outward is riskier (could grab a far line), so keep it short.
+    IN_WIN   = 14.0 * ppf     # trim overshoot up to ~14 ft inward to a support
+    OUT_WIN  = 4.0  * ppf     # extend a short end only up to ~4 ft to a support
+    MIN_SPAN = 3.0  * ppf     # never trim a beam shorter than a real minimum span
+    PERP_DOT = 0.30           # |cos| < 0.30  → >72°  → perpendicular-ish
+    cols_x   = sorted(col_x or [])
+    cols_y   = sorted(col_y or [])
+
+    for m in members:
+        if m.get("type") != "beam" or m.get("bx1") is None:
+            continue
+        x1 = m["bx1"] * page_w; y1 = m["by1"] * page_h
+        x2 = m["bx2"] * page_w; y2 = m["by2"] * page_h
+        L  = math.hypot(x2 - x1, y2 - y1)
+        if L < 1:
+            continue
+        ux, uy = (x2 - x1) / L, (y2 - y1) / L
+        is_h   = abs(ux) >= abs(uy)
+
+        cross = []   # parametric t along the axis (from endpoint A) of each support crossing
+
+        # 1) Column grid lines perpendicular to the beam (centre-to-centre spans).
+        if is_h and abs(ux) > 1e-6:
+            cross += [(cx - x1) / ux for cx in cols_x]
+        elif (not is_h) and abs(uy) > 1e-6:
+            cross += [(cy - y1) / uy for cy in cols_y]
+
+        # 2) Perpendicular drawn structural lines (girders) — the support for the
+        #    ~70 % of beams that DON'T land on a column.  Crossing must fall on the
+        #    girder's actual body (not its infinite extension).
+        for (sx1, sy1, sx2, sy2, _l) in (all_struct_lns or []):
+            sdx, sdy = sx2 - sx1, sy2 - sy1
+            sl = math.hypot(sdx, sdy)
+            if sl < 1:
+                continue
+            vx, vy = sdx / sl, sdy / sl
+            if abs(ux * vx + uy * vy) > PERP_DOT:
+                continue                                   # not perpendicular
+            den = ux * vy - uy * vx
+            if abs(den) < 1e-6:
+                continue
+            t = ((sx1 - x1) * vy - (sy1 - y1) * vx) / den  # param along beam
+            u = ((sx1 - x1) * uy - (sy1 - y1) * ux) / den  # param along girder
+            if -6.0 <= u <= sl + 6.0:                      # crossing on girder body
+                cross.append(t)
+
+        # endpoint A (t=0): trim inward (t>0) up to IN_WIN, extend outward (t<0)
+        # up to OUT_WIN; endpoint B (t=L): trim inward (t<L) up to IN_WIN, extend
+        # outward (t>L) up to OUT_WIN.  Pick the support crossing nearest the end.
+        near0 = [t for t in cross if -OUT_WIN <= t <= IN_WIN] if cross else []
+        near1 = [t for t in cross if L - IN_WIN <= t <= L + OUT_WIN] if cross else []
+        new0 = min(near0, key=lambda t: abs(t))       if near0 else 0.0
+        new1 = min(near1, key=lambda t: abs(t - L))   if near1 else L
+
+        # ── Drawn-steel clamp ────────────────────────────────────────────────
+        # The overlay must not extend more than half a support-depth beyond the
+        # ACTUAL drawn steel line it traces.  build_members extends each end to the
+        # nearest COLUMN (≤ ~3.7 ft), but ~70 % of beams frame into a GIRDER that
+        # sits closer — so that extension overshoots PAST the girder to a column
+        # beyond it.  Clamping to the drawn line + PAD pulls the end back onto the
+        # girder it actually touches.  Collinear drawn segments (CAD breaks the
+        # centreline at each girder crossing) are chained into one extent.
+        PAD = 1.5 * ppf
+        px, py = -uy, ux
+        d_ts = []
+        for (sx1, sy1, sx2, sy2, _l) in (all_struct_lns or []):
+            sdx, sdy = sx2 - sx1, sy2 - sy1
+            sl = math.hypot(sdx, sdy)
+            if sl < 1:
+                continue
+            if abs((sdx * ux + sdy * uy) / sl) < 0.97:        # not parallel
+                continue
+            mx, my = (sx1 + sx2) / 2, (sy1 + sy2) / 2
+            if abs((mx - x1) * px + (my - y1) * py) > 6.0:     # not collinear
+                continue
+            t1 = (sx1 - x1) * ux + (sy1 - y1) * uy
+            t2 = (sx2 - x1) * ux + (sy2 - y1) * uy
+            if max(t1, t2) < -8 or min(t1, t2) > L + 8:        # doesn't overlap body
+                continue
+            d_ts += [t1, t2]
+        if d_ts:
+            new0 = max(new0, min(d_ts) - PAD)     # don't start before drawn steel + PAD
+            new1 = min(new1, max(d_ts) + PAD)     # don't end past drawn steel + PAD
+
+        if new1 - new0 < MIN_SPAN or (abs(new0) < 1e-6 and abs(new1 - L) < 1e-6):
+            continue
+
+        nx1, ny1 = x1 + ux * new0, y1 + uy * new0
+        nx2, ny2 = x1 + ux * new1, y1 + uy * new1
+        m["bx1"] = round(nx1 / page_w, 4); m["by1"] = round(ny1 / page_h, 4)
+        m["bx2"] = round(nx2 / page_w, 4); m["by2"] = round(ny2 / page_h, 4)
+        m["x"]   = round((nx1 + nx2) / 2 / page_w, 4)
+        m["y"]   = round((ny1 + ny2) / 2 / page_h, 4)
+        m["length_ft"] = round(math.hypot(nx2 - nx1, ny2 - ny1) / ppf, 1)
     return members
 
 
@@ -3971,10 +4186,6 @@ async def analyse_pdf(req: AnalysisRequest):
         page = doc[req.page_index]
 
         # ── Page dimensions ───────────────────────────────────────────────────
-        # For raster image files (JPEG, PNG…) fitz may scale dimensions by the
-        # image's embedded DPI metadata (96 DPI screenshot → 75% of pixel size).
-        # We always use PIL pixel dimensions so the fractional member positions
-        # align with the preview image the frontend received from /upload.
         if ext in _IMAGE_EXTS:
             _pil_tmp = PILImage.open(tmp_path)
             page_w   = float(_pil_tmp.width)
@@ -4254,7 +4465,19 @@ async def analyse_pdf(req: AnalysisRequest):
         if not is_raster and req.detect_unlabeled:
             members = add_unlabeled_lines_universal(
                 members, _all_struct_lns,
-                plan_bounds, page_w, page_h, pts_per_foot)
+                plan_bounds, page_w, page_h, pts_per_foot,
+                v_grid=v_grid, h_grid=h_grid,
+                column_symbols=column_symbols)
+
+        # Universal endpoint snap: pull EVERY beam end (labeled + unlabeled) to the
+        # nearest perpendicular support it reaches — column line OR crossing girder
+        # — and stop there.  Trims overshoot and closes short gaps along the axis.
+        # Runs after unlabeled detection so candidates terminate like real girders.
+        if not is_raster:
+            _ccx2, _ccy2 = clean_column_lines(v_grid, h_grid, column_symbols)
+            members = snap_beam_ends_to_supports(
+                members, _all_struct_lns, _ccx2, _ccy2,
+                page_w, page_h, pts_per_foot)
 
         # Render-only: snap EVERY overlay line (labeled + unlabeled candidates)
         # onto the THICK (dark) beam centreline.  Runs LAST so candidates are

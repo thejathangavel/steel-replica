@@ -21,6 +21,7 @@ interface Member {
   h: number;
   color: string;
   overridden?: boolean;
+  unlabeled?: boolean;  // geometry-detected beam with no section callout
 }
 
 interface Summary {
@@ -1125,9 +1126,16 @@ export default function Home() {
                           transition: "all 0.1s",
                           letterSpacing: "0.02em",
                         }}>
-                          {m.profile}
+                          {/* For unlabelled beams, show length only — no section profile is known yet */}
+                          {!m.unlabeled && m.profile && m.profile !== "(beam?)" && (
+                            <span>{m.profile}</span>
+                          )}
                           {m.length_ft > 0 && (
-                            <span style={{ color: "#FBD0E8", fontWeight: 400, marginLeft: "3px" }}>
+                            <span style={{
+                              color: m.unlabeled ? "#FDE68A" : "#FBD0E8",
+                              fontWeight: 400,
+                              marginLeft: (!m.unlabeled && m.profile && m.profile !== "(beam?)") ? "3px" : "0px",
+                            }}>
                               {formatFt(m.length_ft)}
                             </span>
                           )}
