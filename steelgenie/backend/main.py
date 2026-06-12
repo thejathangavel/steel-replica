@@ -81,6 +81,24 @@ STEEL_PATTERNS = [
     r'PIPE[\d.]+',
 ]
 
+# Steel Joist Institute (SJI) joist designations — a JOIST, never a beam.
+#   K-series  : 22K9, 24K6 …            (open-web steel joist)
+#   LH-series : 44LH, 28LH09 …          (long-span)
+#   DLH/SLH   : 18DLH, 52DLH17 …        (deep long-span)
+# Depth (2 digits) + series + optional chord/section number.
+#   IMPORTANT: K-series requires a section number AFTER K (22K9), so a kip-load
+#   annotation like "40K" or "H=±40K" is NOT mistaken for a joist.
+JOIST_PATTERNS = [
+    r'\d{2}K\d{1,2}(?![A-Z])',                 # K-series  (digit after K required)
+    r'\d{2}(?:DLH|SLH|LH)\d{0,2}(?![A-Z])',    # LH / DLH / SLH long-span series
+]
+_JOIST_RE = re.compile(
+    r'^\d{2}(?:K\d{1,2}|(?:DLH|SLH|LH)\d{0,2})$', re.IGNORECASE)
+
+def is_joist_designation(profile: str) -> bool:
+    return bool(_JOIST_RE.match((profile or "").strip()))
+
+
 _GRID_LETTER = re.compile(r'^[A-Z](\.\d+)?$')
 _GRID_NUMBER  = re.compile(r'^\d+(\.\d+)?$')
 
@@ -96,6 +114,16 @@ SYMBOL_SNAP_RADIUS  = 110  # snap marker TO symbol position (wider — position 
 GRID_TOL = 20
 # Grid-intersection SNAP radius (for marker placement — wider than classification)
 GRID_SNAP_RADIUS = 50
+
+# Unlabeled-beam column-gate PERPENDICULAR tolerance (pt).  A candidate endpoint
+# must sit within this distance (perpendicular to the beam) of a column grid row
+# to count as "framing into a column".  Higher = more real beams recovered but
+# more dimension/canopy lines admitted as false (beam?); lower = the reverse.
+# Original behaviour (≈83 unlabeled) used ~36; 10 over-tightened it (dropped to 66).
+# Measured sweep on the reference plan: recall plateaus at 30 pt (80 unlabeled,
+# same col-gate rejection count as the original), so 30 recovers every column-
+# framed beam without loosening further than needed.
+UNLABELED_PERP_TOL = 30.0
 
 
 # ── Scale conversion ──────────────────────────────────────────────────────────
@@ -2160,6 +2188,25 @@ def detect_schedule_zones(page, plan_bounds, text_dict=None):
     if len(hits) < 10:
         return []
 
+    # Collect roughly-horizontal drawn lines so we can tell a real schedule TABLE
+    # (pure text — almost no structural lines cross it) from a dense BEAM-LABEL
+    # column (a grid line that many beams frame into has one beam line crossing
+    # near almost every label).  This is the universal discriminator — a count
+    # threshold alone can't tell them apart, since a long grid line can carry
+    # 30-40 real beam labels.
+    h_lines = []   # (x_lo, x_hi, y) of horizontal-ish segments
+    try:
+        for d in page.get_drawings():
+            for it in d.get("items", []):
+                if it[0] != "l":
+                    continue
+                p1, p2 = it[1], it[2]
+                if abs(p2.y - p1.y) <= abs(p2.x - p1.x) and abs(p2.x - p1.x) > 20:
+                    h_lines.append((min(p1.x, p2.x), max(p1.x, p2.x),
+                                    (p1.y + p2.y) / 2))
+    except Exception:
+        pass
+
     excluded = []
     used = [False] * len(hits)
 
@@ -2186,6 +2233,18 @@ def detect_schedule_zones(page, plan_bounds, text_dict=None):
         y_spread = max(ys) - min(ys)
 
         if x_spread < 8 and y_spread > 250:
+            # Structural test: count beam lines that cross this label column.
+            # A schedule table has almost none; a framing grid line has roughly
+            # one per beam label.  If many cross, these are BEAM LABELS — keep them.
+            cx_band = (min(xs) + max(xs)) / 2.0
+            y0, y1 = min(ys), max(ys)
+            crossing = sum(1 for lx0, lx1, ly in h_lines
+                           if y0 - 30 <= ly <= y1 + 30
+                           and lx0 - 40 <= cx_band <= lx1 + 40)
+            if crossing >= 0.4 * len(cluster):
+                print(f"[SCHEDULE] kept x={cx_band:.0f} n={len(cluster)} — "
+                      f"{crossing} beam lines cross (framing, NOT a table)")
+                continue
             zone = (min(xs) - 60, min(ys) - 40, max(xs) + 60, max(ys) + 40)
             excluded.append(zone)
             print(f"[SCHEDULE] Col-cluster x=[{min(xs):.0f},{max(xs):.0f}] "
@@ -2226,7 +2285,8 @@ def extract_profiles(page, page_w, page_h, plan_bounds, text_dict=None):
         if any(zx0 <= cx <= zx1 and zy0 <= cy <= zy1
                for zx0, zy0, zx1, zy1 in excluded_zones):
             return
-        for pat in STEEL_PATTERNS:
+        for pat, _mtype in ([(p, "beam") for p in STEEL_PATTERNS]
+                            + [(p, "joist") for p in JOIST_PATTERNS]):
             m = re.search(pat, text, re.IGNORECASE)
             if m:
                 # Dedup radius 10 pt (was 20): dense framing plans have labels
@@ -2255,6 +2315,7 @@ def extract_profiles(page, page_w, page_h, plan_bounds, text_dict=None):
                         eff_w, eff_h = bbox_w, bbox_h
                     profiles.append({
                         "profile": normalize_profile(m.group(0)),
+                        "member_type": _mtype,   # "beam" or "joist" (by designation)
                         "cx": cx, "cy": cy,
                         "dir_hint": "V" if _is_vert else "H",
                         "text_angle": angle,
@@ -2585,6 +2646,13 @@ def build_members(profiles, page_w, page_h,
                 v_grid=v_grid, h_grid=h_grid,
             )
 
+        # Joists are drawn as lines like beams — route them through the beam
+        # line-matching so they get a span.  Their final type is set to "joist"
+        # at member creation (by SJI designation), overriding any spurious column
+        # classification of a joist tag that lands near a grid crossing.
+        if p.get("member_type") == "joist" or is_joist_designation(p["profile"]):
+            mtype = "beam"
+
         # ── Beam-line override ────────────────────────────────────────────────
         # detect_beam_lines() matches labels that sit ON a drawn structural
         # centreline at (or near) its midpoint.  Column labels are placed AT
@@ -2884,9 +2952,14 @@ def build_members(profiles, page_w, page_h,
                     length_ft = 0.0
 
         sym = profile_sym_pos.get(p_idx)
+        # Final type: a joist designation (44LH / 22K9 …) is a JOIST, never a beam.
+        _final_type = ("joist"
+                       if (p.get("member_type") == "joist"
+                           or is_joist_designation(p["profile"]))
+                       else mtype)
         members.append({
             "profile":   p["profile"],
-            "type":      mtype,
+            "type":      _final_type,
             "length_ft": length_ft,
             "beam_dir":  beam_dir,   # "H" | "V" for beams; None for columns/braces
             # Beam span endpoints (fractions of page) for the line overlay.
@@ -2903,9 +2976,10 @@ def build_members(profiles, page_w, page_h,
             "sx": sym[0] if sym else None,
             "sy": sym[1] if sym else None,
             "w":  0.025, "h": 0.012,
-            "color":     MEMBER_COLORS.get(mtype, "#6B7280"),
+            "color":     ("#9CA3AF" if _final_type == "joist"
+                          else MEMBER_COLORS.get(_final_type, "#6B7280")),
             "confirmed": True,
-            "is_column": mtype == "column",
+            "is_column": _final_type == "column",
         })
 
     # ── Post-processing: remove duplicates and short stubs ───────────────────
@@ -3048,6 +3122,167 @@ def build_members(profiles, page_w, page_h,
     return deduped
 
 
+def trim_floating_endpoints(members, page_w, page_h, pts_per_foot):
+    """Pull any beam endpoint that FLOATS in empty space back to its nearest
+    REAL support — a detected column or a perpendicular beam.  Grid and dimension
+    lines do NOT count as support, so a beam that overshot along a grid line into
+    an empty area (canopy, margin, past the framing) is trimmed to the last
+    girder/column it actually frames into.  Only ever SHORTENS; a 3 ft min-span
+    guard prevents collapsing a beam.  Universal — keys off real members only.
+    """
+    ppf = pts_per_foot if pts_per_foot > 0 else 9.0
+    R        = 1.8 * ppf      # endpoint within this of a support ⇒ supported
+    MIN_SPAN = 3.0 * ppf
+    beams = [m for m in members
+             if m.get("type") == "beam" and m.get("bx1") is not None]
+    colpts = [(m["x"] * page_w, m["y"] * page_h)
+              for m in members if m.get("type") == "column"]
+    segs = [(n, n["bx1"]*page_w, n["by1"]*page_h, n["bx2"]*page_w, n["by2"]*page_h)
+            for n in beams]
+
+    trimmed = 0
+    for m in beams:
+        x1, y1 = m["bx1"]*page_w, m["by1"]*page_h
+        x2, y2 = m["bx2"]*page_w, m["by2"]*page_h
+        L = math.hypot(x2-x1, y2-y1)
+        if L < 1:
+            continue
+        ux, uy = (x2-x1)/L, (y2-y1)/L
+        px, py = -uy, ux
+
+        cross = []   # parametric t (along axis) of every REAL support crossing
+        for cx, cy in colpts:
+            if abs((cx-x1)*px+(cy-y1)*py) < R:          # column on the axis
+                cross.append((cx-x1)*ux + (cy-y1)*uy)
+        for (n, nx1, ny1, nx2, ny2) in segs:
+            if n is m:
+                continue
+            ndx, ndy = nx2-nx1, ny2-ny1
+            nl = math.hypot(ndx, ndy) or 1.0
+            nux, nuy = ndx/nl, ndy/nl
+            if abs(ux*nux + uy*nuy) > 0.5:               # need a perpendicular beam
+                continue
+            den = ux*nuy - uy*nux
+            if abs(den) < 1e-6:
+                continue
+            t = ((nx1-x1)*nuy - (ny1-y1)*nux) / den       # crossing on our axis
+            u = ((nx1-x1)*uy  - (ny1-y1)*ux ) / den       # crossing on the other beam
+            if -R <= u <= nl + R:
+                cross.append(t)
+        if not cross:
+            continue
+
+        def near(tt):
+            return any(abs(c - tt) < R for c in cross)
+
+        new0, new1 = 0.0, L
+        if not near(0.0):
+            inward = [c for c in cross if R < c < L - R]
+            if inward:
+                new0 = min(inward)                        # first real support in from the start
+        if not near(L):
+            inward = [c for c in cross if new0 + R < c < L - R]
+            if inward:
+                new1 = max(inward)                        # last real support before the end
+
+        if (new0 > 0 or new1 < L) and (new1 - new0) >= MIN_SPAN:
+            a1, b1 = x1 + ux*new0, y1 + uy*new0
+            a2, b2 = x1 + ux*new1, y1 + uy*new1
+            m["bx1"] = round(a1/page_w, 4); m["by1"] = round(b1/page_h, 4)
+            m["bx2"] = round(a2/page_w, 4); m["by2"] = round(b2/page_h, 4)
+            m["x"]   = round((a1+a2)/2/page_w, 4)
+            m["y"]   = round((b1+b2)/2/page_h, 4)
+            m["length_ft"] = round(math.hypot(a2-a1, b2-b1)/ppf, 1)
+            trimmed += 1
+    if trimmed:
+        print(f"[FLOAT] trimmed {trimmed} beam(s) overshooting into empty space")
+    return members
+
+
+def dedup_overlapping_beams(members, page_w, page_h, pts_per_foot):
+    """Remove duplicate beam overlays left after the labeled + unlabeled passes.
+
+    Two beams that are parallel, perpendicular-coincident (within ~half a shallow
+    section depth) and overlap ≥ 50 % are the same physical beam drawn twice.
+    Keep the better one:
+      • a LABELED beam always beats an unlabeled (beam?) candidate,
+      • between two unlabeled candidates, keep the longer.
+    Two DIFFERENT labeled beams are LEFT ALONE — at this perpendicular distance
+    they are almost always two real adjacent beams, not a duplicate, so dropping
+    one would delete a real member.  Universal: keys off geometry only.
+    """
+    ppf  = pts_per_foot if pts_per_foot > 0 else 9.0
+    PERP = max(8.0, ppf * 0.6)     # ~ half a shallow (W8–W12) section depth
+    beams = [m for m in members
+             if m.get("type") == "beam" and m.get("bx1") is not None]
+
+    def geo(m):
+        return (m["bx1"] * page_w, m["by1"] * page_h,
+                m["bx2"] * page_w, m["by2"] * page_h)
+
+    drop = set()
+    for i in range(len(beams)):
+        if id(beams[i]) in drop:
+            continue
+        ax1, ay1, ax2, ay2 = geo(beams[i])
+        La = math.hypot(ax2 - ax1, ay2 - ay1) or 1.0
+        ux, uy = (ax2 - ax1) / La, (ay2 - ay1) / La
+        px, py = -uy, ux
+        for j in range(len(beams)):
+            if i == j or id(beams[j]) in drop:
+                continue
+            bx1, by1, bx2, by2 = geo(beams[j])
+            Lb = math.hypot(bx2 - bx1, by2 - by1) or 1.0
+            if abs(((bx2 - bx1) * ux + (by2 - by1) * uy) / Lb) < 0.96:
+                continue                                   # not parallel
+            if abs((bx1 - ax1) * px + (by1 - ay1) * py) > PERP:
+                continue                                   # not coincident
+            t1 = (bx1 - ax1) * ux + (by1 - ay1) * uy
+            t2 = (bx2 - ax1) * ux + (by2 - ay1) * uy
+            if min(La, max(t1, t2)) - max(0.0, min(t1, t2)) < 0.5 * min(La, Lb):
+                continue                                   # not enough overlap
+            ai = not beams[i].get("unlabeled")
+            bj = not beams[j].get("unlabeled")
+            if ai and not bj:
+                drop.add(id(beams[j]))
+            elif bj and not ai:
+                drop.add(id(beams[i])); break              # i is gone
+            elif (not ai) and (not bj):
+                drop.add(id(beams[j]) if La >= Lb else id(beams[i]))
+                if id(beams[i]) in drop:
+                    break
+            # both labeled → leave both (real adjacent beams)
+    if drop:
+        print(f"[DEDUP] removed {len(drop)} duplicate overlapping beam overlay(s)")
+    return [m for m in members if id(m) not in drop]
+
+
+# ── Steel weight (lb/ft) ──────────────────────────────────────────────────────
+# W / C / MC / S / HP / WT / MT / ST designations ENCODE the nominal weight as
+# the number after the last 'X' (e.g. W12X19 = 19 lb/ft, C12X20.7 = 20.7 lb/ft),
+# so no table is needed for them.  HSS / L / PIPE designations are DIMENSIONAL,
+# so their weights come from a small AISC lookup (extend as needed).
+_DIM_SHAPE_WT = {
+    "HSS6X6X3/8": 27.48, "HSS6X6X1/4": 19.02, "HSS6X6X5/16": 23.34,
+    "HSS12X6X3/8": 41.11, "HSS8X8X1/4": 25.82, "HSS8X8X3/8": 37.69,
+    "HSS4X4X1/4": 12.21, "HSS5X5X1/4": 15.62, "HSS10X10X3/8": 47.90,
+    "L4X4": 12.8,        # L4X4X3/8 (common default); thickness-specific if given
+}
+
+def profile_weight_per_ft(profile):
+    """Nominal weight in lb/ft for a steel section label, or None if unknown."""
+    p = (profile or "").upper().strip()
+    if not p:
+        return None
+    m = re.match(r'^(?:W|C|MC|S|HP|WT|MT|ST|M)\d+(?:\.\d+)?X(\d+(?:\.\d+)?)$', p)
+    if m:                                  # weight encoded in the designation
+        return float(m.group(1))
+    if p in _DIM_SHAPE_WT:
+        return _DIM_SHAPE_WT[p]
+    # HSS prefix without an exact table hit → try the base "HSSaXbXt" key as-is
+    return _DIM_SHAPE_WT.get(p)
+
+
 def build_summary(members):
     s = {
         "column": 0, "beam": 0,
@@ -3056,12 +3291,31 @@ def build_summary(members):
         "bolt": 0, "camber": 0, "anchor": 0,
         "weld_studs": 0, "total_weight_tons": 0,
     }
+    total_lb   = 0.0     # weight of SIZED members (length × lb/ft)
+    weighed_ft = 0.0     # length of members we could weigh
+    unsized_ft = 0.0     # length of beams with no known size (e.g. unlabeled)
     for m in members:
         t = m.get("type", "beam")
         if   t == "column":                      s["column"] += 1
         elif t == "beam":                         s["beam"]   += 1
+        elif t == "joist":                        s["joists"] += 1
         elif t in ("brace", "vertical_brace"):    s["vertical_brace"] += 1
         elif t == "horizontal_brace":             s["horizontal_brace"] += 1
+
+        # Tonnage from any member that carries a length AND a sized profile.
+        if t in ("beam", "brace", "vertical_brace", "horizontal_brace"):
+            L = m.get("length_ft", 0) or 0.0
+            if L > 0:
+                w = profile_weight_per_ft(m.get("profile", ""))
+                if w:
+                    total_lb   += w * L
+                    weighed_ft += L
+                else:
+                    unsized_ft += L
+
+    s["total_weight_tons"] = round(total_lb / 2000.0, 2)
+    s["weighed_length_ft"] = round(weighed_ft, 1)
+    s["unsized_length_ft"] = round(unsized_ft, 1)
     return s
 
 
@@ -3447,12 +3701,26 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
     # (typical minimum steel bay is ~8 ft, so 4 ft is well inside one bay).
     COL_TOL = max(36.0, ppf * 0.5)
 
-    def _at_col(ex, ey):
+    def _at_col(ex, ey, is_h):
         """True if (ex, ey) is at a column position (grid intersection or symbol)."""
         if not _has_col_data:
             return True   # no grid data → skip check (safe: no false rejections)
-        return (min(abs(ex - x) for x in _col_xs) < COL_TOL and
-                min(abs(ey - y) for y in _col_ys) < COL_TOL)
+        # A LABELED beam endpoint is direct proof of a real support at that point.
+        # Accept it — this recovers candidates that frame into a column the symbol
+        # detector missed but a labeled beam confirms (the cause of unlabeled beams
+        # dropping when fewer column symbols are detected).
+        if any(math.hypot(ex - lex, ey - ley) < COL_TOL for lex, ley in _lab_ends):
+            return True
+        # Longitudinal tolerance remains wide (COL_TOL) to bridge end gaps.
+        # Perpendicular tolerance balances two failures: too WIDE re-admits
+        # parallel offset lines (dimension strings, canopy boundaries) as false
+        # beams; too TIGHT (10 pt) rejects real beams whose endpoint sits a little
+        # off the grid row → the cause of unlabeled dropping 83→66.  Tune the
+        # module-level UNLABELED_PERP_TOL to trade recall vs false positives.
+        x_tol = COL_TOL if is_h else UNLABELED_PERP_TOL
+        y_tol = UNLABELED_PERP_TOL if is_h else COL_TOL
+        return (min(abs(ex - x) for x in _col_xs) < x_tol and
+                min(abs(ey - y) for y in _col_ys) < y_tol)
 
     # ── Coverage check against already-extracted labeled beams ────────────────
     # Exclude any prior unlabeled candidates so coverage is measured only
@@ -3462,12 +3730,16 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
            for m in members
            if m.get("type") == "beam" and m.get("bx1") is not None
            and not m.get("unlabeled")]
+    # Labeled beam endpoints — real, confirmed support positions used by _at_col
+    # above to bridge columns the symbol detector missed.
+    _lab_ends = [(a, b) for (a, b, c, d) in lab] + [(c, d) for (a, b, c, d) in lab]
 
+    seen_lines = []
     def _covered(lx1, ly1, lx2, ly2):
-        """True if this line coincides with a labeled beam (already extracted)."""
+        """True if this line coincides with an already extracted beam."""
         L = math.hypot(lx2 - lx1, ly2 - ly1) or 1.0
         ux, uy = (lx2 - lx1) / L, (ly2 - ly1) / L
-        for (ax1, ay1, ax2, ay2) in lab:
+        for (ax1, ay1, ax2, ay2) in lab + seen_lines:
             aL = math.hypot(ax2 - ax1, ay2 - ay1) or 1.0
             if abs(((ax2 - ax1) * ux + (ay2 - ay1) * uy) / aL) < 0.96:
                 continue                      # not parallel
@@ -3475,13 +3747,22 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
                 continue                      # too far perpendicular
             t1 = (ax1 - lx1) * ux + (ay1 - ly1) * uy
             t2 = (ax2 - lx1) * ux + (ay2 - ly1) * uy
-            if min(L, max(t1, t2)) - max(0.0, min(t1, t2)) > 0.4 * L:
-                return True                   # overlaps the labeled beam
+            overlap = min(L, max(t1, t2)) - max(0.0, min(t1, t2))
+            # Covered if overlap is > 40% of the NEW line, OR if it overlaps
+            # by more than 10 feet. Because we process short lines first, a long
+            # multi-bay grid line will overlap an existing bay-beam by > 10 feet
+            # and be correctly rejected instead of duplicating and overshooting.
+            if overlap > 0.4 * L or overlap > 10.0 * ppf:
+                return True
         return False
 
     seen, n = [], 0
     rejected_col, rejected_len, rejected_dir = 0, 0, 0
-    for (lx1, ly1, lx2, ly2, ln) in all_struct_lns:
+    
+    # Sort by length ASCENDING so individual bay-length beams are processed before
+    # long, multi-bay grid lines or dimension strings.
+    sorted_lns = sorted(all_struct_lns, key=lambda s: s[4])
+    for (lx1, ly1, lx2, ly2, ln) in sorted_lns:
         if n >= CAP:
             break
         adx, ady = abs(lx2 - lx1), abs(ly2 - ly1)
@@ -3489,11 +3770,13 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
         # F1: orthogonal only + F2: reject near-full-plan-width/height lines
         if adx > ady * 2:
             bdir = "H"
+            is_h = True
             if adx > plan_w * MAX_H_FRAC:
                 rejected_dir += 1
                 continue
         elif ady > adx * 2:
             bdir = "V"
+            is_h = False
             if ady > plan_h * MAX_V_FRAC:
                 rejected_dir += 1
                 continue
@@ -3509,7 +3792,7 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
         # F4: BOTH endpoints must be at a real column position.
         # This is the primary false-positive gate — dimension lines, wall lines,
         # and grid lines do NOT span column-to-column in both axes.
-        if not (_at_col(lx1, ly1) and _at_col(lx2, ly2)):
+        if not (_at_col(lx1, ly1, is_h) and _at_col(lx2, ly2, is_h)):
             rejected_col += 1
             continue
 
@@ -3552,6 +3835,7 @@ def add_unlabeled_lines_universal(members, all_struct_lns, plan_bounds,
             continue
 
         seen.append((mx, my))
+        seen_lines.append((lx1, ly1, lx2, ly2))
         Lft = ln / ppf
         members.append({
             "profile": "(beam?)", "type": "beam",
@@ -3835,6 +4119,13 @@ def snap_beam_ends_to_supports(members, all_struct_lns, col_x, col_y,
         if L < 1:
             continue
         ux, uy = (x2 - x1) / L, (y2 - y1) / L
+        # Skip SKEWED / diagonal beams.  The column-grid crossings below assume a
+        # rectangular grid; on a skewed framing plan they snap a diagonal endpoint
+        # to a wrong grid intersection and distort the span (the angle stays right
+        # but the line gets the wrong length/ends).  The matcher already placed the
+        # diagonal overlay on its true drawn line — leave it exactly as drawn.
+        if not (abs(ux) < 0.09 or abs(uy) < 0.09):    # >~5° off both axes → diagonal
+            continue
         is_h   = abs(ux) >= abs(uy)
 
         cross = []   # parametric t along the axis (from endpoint A) of each support crossing
@@ -4484,6 +4775,16 @@ async def analyse_pdf(req: AnalysisRequest):
         # centred too — they lie ON the beam, not near it.
         if not is_raster:
             members = center_beam_overlays(members, _lines_w, page_w, page_h)
+
+        # Final dedup: drop duplicate overlapping beam overlays left by the
+        # labeled + unlabeled passes (keeps labeled over unlabeled, longer over
+        # shorter; leaves two distinct labeled beams alone).
+        members = dedup_overlapping_beams(members, page_w, page_h, pts_per_foot)
+
+        # Pull any beam endpoint that floats in empty space (overshot along a grid
+        # or dimension line) back to its nearest real support — column or
+        # perpendicular beam.  This kills the canopy/margin/past-framing overshoot.
+        members = trim_floating_endpoints(members, page_w, page_h, pts_per_foot)
 
         # ── ROTATION OUTPUT TRANSFORM ─────────────────────────────────────────
         # All member coordinates above are fractions of the UNROTATED page

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "emerus_areaA",
+    "file": "1Pages from #Structural binder.pdf",
+    "page": 0,
+    "scale": 64.0,
+    "unlabeled": true
+  },
+  {
+    "name": "areaB_skewed",
+    "file": "2Pages from #Structural binder.pdf",
+    "page": 0,
+    "scale": 64.0,
+    "unlabeled": true
+  },
+  {
+    "name": "level2_framing",
+    "file": "Structural snaps.pdf",
+    "page": 0,
+    "scale": 96.0,
+    "unlabeled": false
+  },
+  {
+    "name": "snaps_skewed",
+    "file": "Structural snaps.pdf",
+    "page": 2,
+    "scale": 96.0,
+    "unlabeled": true
+  },
+  {
+    "name": "roof_p41",
+    "file": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 41,
+    "scale": 192.0,
+    "unlabeled": false
+  },
+  {
+    "name": "deflection_p14",
+    "file": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 14,
+    "scale": 192.0,
+    "unlabeled": true
+  }
+]

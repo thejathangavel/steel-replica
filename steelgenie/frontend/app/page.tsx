@@ -123,6 +123,7 @@ export default function Home() {
   const [hoveredMember, setHoveredMember] = useState<Member | null>(null);
   const [tooltipPos, setTooltipPos]       = useState({ x: 0, y: 0 });
   const [zoomLevel, setZoomLevel]         = useState(1);
+  const [activeTab, setActiveTab]         = useState<"Plans" | "BOM">("Plans");
   const [contextMenu, setContextMenu]     = useState<ContextMenu | null>(null);
   const [cropMode, setCropMode]           = useState(false);
   const [cropDrag, setCropDrag]           = useState<CropRect | null>(null);
@@ -199,6 +200,39 @@ export default function Home() {
     }
     return { ...baseSummary, column, beam, vertical_brace, horizontal_brace };
   }, [members, baseSummary, cropRect, regionMembers]);
+
+  // ── BOM / material takeoff (per-profile) ──────────────────────────────────
+  // W/C/MC/S/HP/WT/MT/ST encode lb/ft as the number after the last 'X'
+  // (W12X19 = 19 lb/ft); HSS/L are dimensional → weight unknown on the client,
+  // so those rows show length only (the backend total stays authoritative).
+  const profileWeight = (p: string): number | null => {
+    const s = (p || "").toUpperCase().trim();
+    const m = s.match(/^(?:W|C|MC|S|HP|WT|MT|ST|M)\d+(?:\.\d+)?X(\d+(?:\.\d+)?)$/);
+    return m ? parseFloat(m[1]) : null;
+  };
+  const bomRows = useMemo(() => {
+    const src = cropRect ? regionMembers : members;
+    const map = new Map<string, { count: number; ft: number; w: number | null }>();
+    for (const m of src) {
+      if (m.type !== "beam") continue;
+      if (!m.profile || m.profile === "(beam?)") continue;
+      const e = map.get(m.profile) ?? { count: 0, ft: 0, w: profileWeight(m.profile) };
+      e.count += 1;
+      e.ft += m.length_ft || 0;
+      map.set(m.profile, e);
+    }
+    const rows = Array.from(map.entries()).map(([profile, e]) => ({
+      profile, count: e.count, ft: e.ft, w: e.w,
+      tons: e.w ? (e.w * e.ft) / 2000 : null,
+    }));
+    rows.sort((a, b) => (b.tons ?? 0) - (a.tons ?? 0));
+    const totalTons   = rows.reduce((s, r) => s + (r.tons ?? 0), 0);
+    const totalFt      = rows.reduce((s, r) => s + r.ft, 0);
+    const unsizedFt    = (cropRect ? regionMembers : members)
+      .filter(m => m.type === "beam" && (!m.profile || m.profile === "(beam?)"))
+      .reduce((s, m) => s + (m.length_ft || 0), 0);
+    return { rows, totalTons, totalFt, unsizedFt };
+  }, [members, regionMembers, cropRect]);
 
   // ── CLOSE CONTEXT MENU ON OUTSIDE CLICK ───────────────────────────────────
   useEffect(() => {
@@ -622,14 +656,20 @@ export default function Home() {
       }}>
         <span style={{ color: "white", fontWeight: "bold", fontSize: "16px" }}>Calsteel</span>
         <div style={{ display: "flex", gap: "4px", flex: 1, justifyContent: "center" }}>
-          {["Plans", "Columns", "Braces", "BOM", "Config"].map(tab => (
-            <div key={tab} style={{
-              padding: "4px 16px", fontSize: "14px",
-              color: tab === "Plans" ? "white" : "#64748B",
-              borderBottom: tab === "Plans" ? "2px solid #3B82F6" : "2px solid transparent",
-              cursor: tab === "Plans" ? "default" : "not-allowed", userSelect: "none",
-            }}>{tab}</div>
-          ))}
+          {["Plans", "Columns", "Braces", "BOM", "Config"].map(tab => {
+            const enabled = tab === "Plans" || tab === "BOM";
+            const active  = activeTab === tab;
+            return (
+              <div key={tab}
+                onClick={() => { if (enabled) setActiveTab(tab as "Plans" | "BOM"); }}
+                style={{
+                  padding: "4px 16px", fontSize: "14px",
+                  color: active ? "white" : enabled ? "#94A3B8" : "#64748B",
+                  borderBottom: active ? "2px solid #3B82F6" : "2px solid transparent",
+                  cursor: enabled ? "pointer" : "not-allowed", userSelect: "none",
+                }}>{tab}</div>
+            );
+          })}
         </div>
         <button onClick={() => setShowSaveModal(true)} style={{
           backgroundColor: "#15803D", border: "1px solid #166534", color: "white",
@@ -646,7 +686,83 @@ export default function Home() {
       </div>
 
       {/* MAIN BODY */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
+
+        {/* ── BOM / MATERIAL TAKEOFF VIEW ── */}
+        {activeTab === "BOM" && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 50, backgroundColor: "#0F172A",
+            overflow: "auto", padding: "24px 32px",
+          }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "4px" }}>
+              <h2 style={{ color: "white", fontSize: "20px", fontWeight: 700, margin: 0 }}>Bill of Materials</h2>
+              <span style={{ color: "#64748B", fontSize: "13px" }}>
+                {cropRect ? "selected region" : "full sheet"} · steel beam takeoff
+              </span>
+            </div>
+            {/* Headline totals */}
+            <div style={{ display: "flex", gap: "16px", margin: "16px 0 20px" }}>
+              {[
+                { label: "Total Weight", value: `${bomRows.totalTons.toFixed(2)} t`, hi: true },
+                { label: "Sized length", value: `${Math.round(bomRows.totalFt).toLocaleString()} ft` },
+                { label: "Sections", value: `${bomRows.rows.length}` },
+                { label: "Unsized (unlabeled)", value: `${Math.round(bomRows.unsizedFt).toLocaleString()} ft`, warn: bomRows.unsizedFt > 0 },
+              ].map(c => (
+                <div key={c.label} style={{
+                  backgroundColor: "#1E293B", border: "1px solid #334155", borderRadius: "8px",
+                  padding: "12px 18px", minWidth: "140px",
+                }}>
+                  <div style={{ color: "#64748B", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{c.label}</div>
+                  <div style={{ color: c.hi ? "#34D399" : c.warn ? "#FBBF24" : "white", fontSize: "22px", fontWeight: 700, marginTop: "4px" }}>{c.value}</div>
+                </div>
+              ))}
+            </div>
+            {/* Per-profile table */}
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+              <thead>
+                <tr style={{ color: "#94A3B8", textAlign: "left", borderBottom: "1px solid #334155" }}>
+                  <th style={{ padding: "8px 12px" }}>Profile</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Qty</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Total Length (ft)</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Weight (lb/ft)</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Weight (tons)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bomRows.rows.length === 0 && (
+                  <tr><td colSpan={5} style={{ padding: "24px 12px", color: "#64748B", textAlign: "center" }}>
+                    No sized beams yet — extract a labeled framing plan to populate the takeoff.
+                  </td></tr>
+                )}
+                {bomRows.rows.map(r => (
+                  <tr key={r.profile} style={{ color: "#E2E8F0", borderBottom: "1px solid #1E293B" }}>
+                    <td style={{ padding: "8px 12px", fontWeight: 600 }}>{r.profile}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right" }}>{r.count}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right" }}>{r.ft.toFixed(1)}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right", color: r.w ? "#E2E8F0" : "#64748B" }}>{r.w ?? "—"}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: r.tons ? "#34D399" : "#64748B" }}>{r.tons != null ? r.tons.toFixed(2) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+              {bomRows.rows.length > 0 && (
+                <tfoot>
+                  <tr style={{ color: "white", fontWeight: 700, borderTop: "2px solid #334155" }}>
+                    <td style={{ padding: "10px 12px" }}>Total</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right" }}>{bomRows.rows.reduce((s, r) => s + r.count, 0)}</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right" }}>{bomRows.totalFt.toFixed(1)}</td>
+                    <td></td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", color: "#34D399" }}>{bomRows.totalTons.toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+            {bomRows.unsizedFt > 0 && (
+              <div style={{ marginTop: "16px", color: "#64748B", fontSize: "12px" }}>
+                Note: {Math.round(bomRows.unsizedFt).toLocaleString()} ft of unlabeled <code>(beam?)</code> members are not weighed — assign sizes to include them.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* LEFT SIDEBAR */}
         <div style={{
