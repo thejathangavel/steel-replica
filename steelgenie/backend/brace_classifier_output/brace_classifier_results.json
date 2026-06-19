@@ -1,0 +1,4328 @@
+{
+  "#Structural binder.pdf": {
+    "pages": 35,
+    "pages_with_high": 8,
+    "total_high": 52,
+    "total_medium": 217,
+    "total_reject": 4869,
+    "page_detail": {
+      "0": {
+        "high": 0,
+        "medium": 0,
+        "reject": 0,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {}
+      },
+      "1": {
+        "high": 0,
+        "medium": 5,
+        "reject": 2,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          8.0,
+          8.0,
+          8.0,
+          8.0,
+          8.0
+        ],
+        "reject_reasons": {
+          "too_short": 2
+        }
+      },
+      "2": {
+        "high": 0,
+        "medium": 0,
+        "reject": 1626,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 1626
+        }
+      },
+      "3": {
+        "high": 0,
+        "medium": 0,
+        "reject": 4,
+        "context": "foundation_plan",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 4
+        }
+      },
+      "4": {
+        "high": 0,
+        "medium": 12,
+        "reject": 167,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          13.48,
+          13.48,
+          13.48,
+          13.48,
+          12.81,
+          12.19,
+          11.95,
+          9.71,
+          9.62,
+          8.7,
+          8.64,
+          8.33
+        ],
+        "reject_reasons": {
+          "density_cluster": 161,
+          "too_short": 6
+        }
+      },
+      "5": {
+        "high": 0,
+        "medium": 0,
+        "reject": 138,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 135,
+          "context:schedule_legend": 1,
+          "too_short": 2
+        }
+      },
+      "6": {
+        "high": 0,
+        "medium": 4,
+        "reject": 18,
+        "context": "framing_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          10.1,
+          10.05,
+          10.01,
+          9.97
+        ],
+        "reject_reasons": {
+          "density_cluster": 18
+        }
+      },
+      "7": {
+        "high": 2,
+        "medium": 6,
+        "reject": 55,
+        "context": "unknown",
+        "high_lengths": [
+          18.93,
+          18.77
+        ],
+        "medium_lengths": [
+          13.94,
+          13.94,
+          13.93,
+          13.93,
+          13.2,
+          13.2
+        ],
+        "reject_reasons": {
+          "density_cluster": 52,
+          "too_short": 3
+        }
+      },
+      "8": {
+        "high": 2,
+        "medium": 2,
+        "reject": 74,
+        "context": "unknown",
+        "high_lengths": [
+          18.85,
+          18.71
+        ],
+        "medium_lengths": [
+          13.19,
+          13.19
+        ],
+        "reject_reasons": {
+          "too_short": 10,
+          "density_cluster": 64
+        }
+      },
+      "9": {
+        "high": 0,
+        "medium": 13,
+        "reject": 68,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          10.91,
+          10.69,
+          10.12,
+          10.12,
+          9.81,
+          9.58,
+          9.35,
+          9.27,
+          8.93,
+          8.85,
+          8.48,
+          8.25,
+          8.02
+        ],
+        "reject_reasons": {
+          "too_short": 14,
+          "hatch_boundary": 28,
+          "density_cluster": 26
+        }
+      },
+      "10": {
+        "high": 0,
+        "medium": 4,
+        "reject": 233,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          10.99,
+          10.9,
+          10.74,
+          10.49
+        ],
+        "reject_reasons": {
+          "density_cluster": 192,
+          "hatch_boundary": 41
+        }
+      },
+      "11": {
+        "high": 0,
+        "medium": 4,
+        "reject": 187,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          10.07,
+          9.7,
+          8.74,
+          8.36
+        ],
+        "reject_reasons": {
+          "density_cluster": 156,
+          "hatch_boundary": 31
+        }
+      },
+      "12": {
+        "high": 0,
+        "medium": 19,
+        "reject": 224,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          61.68,
+          61.07,
+          60.35,
+          17.23,
+          16.64,
+          15.9,
+          15.3,
+          11.36,
+          10.55,
+          10.46,
+          10.35,
+          10.32,
+          9.79,
+          9.21,
+          9.13,
+          9.01,
+          8.99,
+          8.79,
+          8.46
+        ],
+        "reject_reasons": {
+          "density_cluster": 150,
+          "too_short": 11,
+          "hatch_boundary": 63
+        }
+      },
+      "13": {
+        "high": 0,
+        "medium": 17,
+        "reject": 137,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          16.44,
+          16.44,
+          16.27,
+          16.27,
+          10.48,
+          9.7,
+          9.57,
+          9.57,
+          9.57,
+          9.57,
+          9.27,
+          9.15,
+          8.67,
+          8.34,
+          8.34,
+          8.33,
+          8.33
+        ],
+        "reject_reasons": {
+          "density_cluster": 118,
+          "too_short": 11,
+          "hatch_boundary": 8
+        }
+      },
+      "14": {
+        "high": 0,
+        "medium": 0,
+        "reject": 928,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 795,
+          "hatch_boundary": 133
+        }
+      },
+      "15": {
+        "high": 0,
+        "medium": 0,
+        "reject": 14,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 14
+        }
+      },
+      "16": {
+        "high": 2,
+        "medium": 11,
+        "reject": 63,
+        "context": "foundation_plan",
+        "high_lengths": [
+          18.0,
+          15.56
+        ],
+        "medium_lengths": [
+          13.65,
+          13.42,
+          13.42,
+          12.15,
+          12.14,
+          11.03,
+          9.7,
+          9.62,
+          9.33,
+          8.38,
+          8.36
+        ],
+        "reject_reasons": {
+          "too_short": 15,
+          "hatch_boundary": 17,
+          "density_cluster": 31
+        }
+      },
+      "17": {
+        "high": 0,
+        "medium": 0,
+        "reject": 15,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 8,
+          "too_short": 5,
+          "context:schedule_legend": 2
+        }
+      },
+      "18": {
+        "high": 0,
+        "medium": 0,
+        "reject": 100,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 90,
+          "context:schedule_legend": 4,
+          "too_short": 6
+        }
+      },
+      "19": {
+        "high": 0,
+        "medium": 0,
+        "reject": 102,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 79,
+          "too_short": 9,
+          "hatch_boundary": 14
+        }
+      },
+      "20": {
+        "high": 0,
+        "medium": 0,
+        "reject": 30,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 20,
+          "density_cluster": 8,
+          "context:schedule_legend": 2
+        }
+      },
+      "21": {
+        "high": 0,
+        "medium": 0,
+        "reject": 33,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 10,
+          "density_cluster": 10,
+          "too_short": 13
+        }
+      },
+      "22": {
+        "high": 0,
+        "medium": 0,
+        "reject": 43,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 19,
+          "context:schedule_legend": 12,
+          "density_cluster": 12
+        }
+      },
+      "23": {
+        "high": 9,
+        "medium": 11,
+        "reject": 35,
+        "context": "unknown",
+        "high_lengths": [
+          19.08,
+          19.08,
+          19.08,
+          19.08,
+          19.08,
+          19.08,
+          15.85,
+          15.85,
+          15.85
+        ],
+        "medium_lengths": [
+          14.63,
+          14.5,
+          13.32,
+          12.11,
+          10.76,
+          9.49,
+          9.41,
+          9.4,
+          8.83,
+          8.45,
+          8.07
+        ],
+        "reject_reasons": {
+          "density_cluster": 23,
+          "too_short": 12
+        }
+      },
+      "24": {
+        "high": 0,
+        "medium": 8,
+        "reject": 64,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          14.62,
+          14.21,
+          10.04,
+          10.03,
+          9.57,
+          9.5,
+          9.47,
+          8.08
+        ],
+        "reject_reasons": {
+          "density_cluster": 58,
+          "too_short": 6
+        }
+      },
+      "25": {
+        "high": 0,
+        "medium": 10,
+        "reject": 65,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          14.89,
+          14.89,
+          11.86,
+          11.3,
+          8.73,
+          8.52,
+          8.42,
+          8.24,
+          8.08,
+          8.08
+        ],
+        "reject_reasons": {
+          "density_cluster": 60,
+          "too_short": 4,
+          "detail_scale(54.0pt/ft\u21922.1ft)": 1
+        }
+      },
+      "26": {
+        "high": 2,
+        "medium": 17,
+        "reject": 92,
+        "context": "unknown",
+        "high_lengths": [
+          16.27,
+          16.26
+        ],
+        "medium_lengths": [
+          12.91,
+          12.58,
+          12.25,
+          12.25,
+          12.25,
+          11.99,
+          11.6,
+          11.41,
+          11.26,
+          9.63,
+          9.58,
+          9.34,
+          8.6,
+          8.59,
+          8.19,
+          8.11,
+          8.11
+        ],
+        "reject_reasons": {
+          "density_cluster": 92
+        }
+      },
+      "27": {
+        "high": 0,
+        "medium": 0,
+        "reject": 8,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 8
+        }
+      },
+      "28": {
+        "high": 0,
+        "medium": 14,
+        "reject": 77,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          16.28,
+          16.28,
+          15.55,
+          15.55,
+          15.48,
+          15.41,
+          15.32,
+          15.25,
+          11.0,
+          11.0,
+          10.99,
+          8.65,
+          8.65,
+          8.14
+        ],
+        "reject_reasons": {
+          "density_cluster": 77
+        }
+      },
+      "29": {
+        "high": 0,
+        "medium": 10,
+        "reject": 28,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          13.54,
+          11.59,
+          11.58,
+          11.58,
+          9.17,
+          9.17,
+          9.16,
+          8.45,
+          8.45,
+          8.3
+        ],
+        "reject_reasons": {
+          "density_cluster": 11,
+          "too_short": 17
+        }
+      },
+      "30": {
+        "high": 0,
+        "medium": 10,
+        "reject": 81,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.59,
+          10.79,
+          10.55,
+          10.55,
+          10.31,
+          9.45,
+          9.21,
+          9.21,
+          8.98,
+          8.11
+        ],
+        "reject_reasons": {
+          "detail_scale(54.0pt/ft\u21922.8ft)": 3,
+          "detail_scale(54.0pt/ft\u21922.7ft)": 3,
+          "density_cluster": 11,
+          "too_short": 24,
+          "hatch_boundary": 40
+        }
+      },
+      "31": {
+        "high": 11,
+        "medium": 22,
+        "reject": 49,
+        "context": "unknown",
+        "high_lengths": [
+          36.89,
+          36.89,
+          36.89,
+          36.88,
+          22.48,
+          20.19,
+          18.51,
+          15.82,
+          15.82,
+          15.81,
+          15.81
+        ],
+        "medium_lengths": [
+          14.37,
+          14.33,
+          14.32,
+          14.28,
+          14.23,
+          14.18,
+          14.13,
+          13.72,
+          12.27,
+          12.2,
+          11.86,
+          11.85,
+          10.28,
+          10.28,
+          9.98,
+          8.98,
+          8.97,
+          8.97,
+          8.97,
+          8.97
+        ],
+        "reject_reasons": {
+          "density_cluster": 29,
+          "too_short": 19,
+          "detail_scale(54.0pt/ft\u21923.1ft)": 1
+        }
+      },
+      "32": {
+        "high": 19,
+        "medium": 4,
+        "reject": 78,
+        "context": "unknown",
+        "high_lengths": [
+          21.24,
+          21.24,
+          21.16,
+          21.09,
+          20.33,
+          20.33,
+          20.29,
+          20.29,
+          18.41,
+          18.33,
+          18.26,
+          17.92,
+          17.91,
+          17.9,
+          17.27,
+          16.62,
+          16.56,
+          16.43,
+          16.41
+        ],
+        "medium_lengths": [
+          13.94,
+          13.94,
+          10.24,
+          10.17
+        ],
+        "reject_reasons": {
+          "density_cluster": 76,
+          "too_short": 2
+        }
+      },
+      "33": {
+        "high": 5,
+        "medium": 0,
+        "reject": 0,
+        "context": "unknown",
+        "high_lengths": [
+          25.61,
+          25.61,
+          25.61,
+          25.61,
+          23.69
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {}
+      },
+      "34": {
+        "high": 0,
+        "medium": 14,
+        "reject": 31,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          27.43,
+          25.61,
+          25.61,
+          25.61,
+          25.61,
+          25.05,
+          23.68,
+          18.0,
+          17.94,
+          17.73,
+          17.67,
+          16.64,
+          9.5,
+          9.39
+        ],
+        "reject_reasons": {
+          "hatch_boundary": 1,
+          "density_cluster": 20,
+          "too_short": 10
+        }
+      }
+    }
+  },
+  "Structural snaps.pdf": {
+    "pages": 8,
+    "pages_with_high": 8,
+    "total_high": 80,
+    "total_medium": 36,
+    "total_reject": 937,
+    "page_detail": {
+      "0": {
+        "high": 4,
+        "medium": 5,
+        "reject": 47,
+        "context": "framing_plan",
+        "high_lengths": [
+          30.86,
+          30.86,
+          29.32,
+          29.17
+        ],
+        "medium_lengths": [
+          10.92,
+          10.86,
+          8.86,
+          8.27,
+          8.14
+        ],
+        "reject_reasons": {
+          "density_cluster": 45,
+          "too_short": 2
+        }
+      },
+      "1": {
+        "high": 2,
+        "medium": 10,
+        "reject": 103,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          34.19,
+          34.18
+        ],
+        "medium_lengths": [
+          14.91,
+          13.54,
+          12.44,
+          10.24,
+          9.68,
+          8.99,
+          8.81,
+          8.75,
+          8.58,
+          8.56
+        ],
+        "reject_reasons": {
+          "density_cluster": 93,
+          "too_short": 8,
+          "detail_scale(18.0pt/ft\u21925.0ft)": 1,
+          "detail_scale(18.0pt/ft\u21924.0ft)": 1
+        }
+      },
+      "2": {
+        "high": 10,
+        "medium": 2,
+        "reject": 63,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          70.38,
+          48.73,
+          33.46,
+          33.33,
+          25.54,
+          23.18,
+          23.18,
+          22.79,
+          22.68,
+          19.33
+        ],
+        "medium_lengths": [
+          8.49,
+          8.44
+        ],
+        "reject_reasons": {
+          "density_cluster": 61,
+          "too_short": 2
+        }
+      },
+      "3": {
+        "high": 23,
+        "medium": 14,
+        "reject": 152,
+        "context": "unknown",
+        "high_lengths": [
+          72.01,
+          70.54,
+          58.6,
+          18.5,
+          18.14,
+          18.01,
+          17.54,
+          17.13,
+          17.13,
+          16.86,
+          16.86,
+          16.69,
+          16.53,
+          16.28,
+          16.05,
+          16.05,
+          15.62,
+          15.4,
+          15.4,
+          15.26
+        ],
+        "medium_lengths": [
+          14.55,
+          14.53,
+          14.25,
+          12.21,
+          12.19,
+          11.88,
+          11.86,
+          11.45,
+          11.36,
+          11.15,
+          11.15,
+          11.11,
+          10.55,
+          10.05
+        ],
+        "reject_reasons": {
+          "density_cluster": 149,
+          "too_short": 3
+        }
+      },
+      "4": {
+        "high": 2,
+        "medium": 5,
+        "reject": 47,
+        "context": "unknown",
+        "high_lengths": [
+          15.14,
+          15.14
+        ],
+        "medium_lengths": [
+          14.56,
+          14.56,
+          11.23,
+          10.6,
+          10.6
+        ],
+        "reject_reasons": {
+          "density_cluster": 36,
+          "too_short": 11
+        }
+      },
+      "5": {
+        "high": 8,
+        "medium": 0,
+        "reject": 491,
+        "context": "unknown",
+        "high_lengths": [
+          17.79,
+          17.79,
+          17.73,
+          16.75,
+          16.71,
+          16.41,
+          16.41,
+          15.13
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 482,
+          "hatch_boundary": 9
+        }
+      },
+      "6": {
+        "high": 15,
+        "medium": 0,
+        "reject": 34,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          36.88,
+          36.87,
+          36.87,
+          36.87,
+          36.61,
+          36.55,
+          25.13,
+          23.8,
+          23.2,
+          21.63,
+          21.63,
+          18.3,
+          18.17,
+          17.45,
+          17.31
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 27,
+          "too_short": 7
+        }
+      },
+      "7": {
+        "high": 16,
+        "medium": 0,
+        "reject": 0,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          38.88,
+          38.87,
+          34.13,
+          33.72,
+          33.71,
+          33.25,
+          33.24,
+          33.16,
+          32.42,
+          30.74,
+          30.74,
+          29.58,
+          28.53,
+          28.52,
+          22.91,
+          22.9
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {}
+      }
+    }
+  },
+  "07_STRUCTURAL_COMBINED.pdf": {
+    "pages": 74,
+    "pages_with_high": 20,
+    "total_high": 234,
+    "total_medium": 207,
+    "total_reject": 15378,
+    "page_detail": {
+      "0": {
+        "high": 0,
+        "medium": 0,
+        "reject": 284,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 237,
+          "context:schedule_legend": 47
+        }
+      },
+      "1": {
+        "high": 0,
+        "medium": 0,
+        "reject": 4,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 4
+        }
+      },
+      "2": {
+        "high": 0,
+        "medium": 0,
+        "reject": 36,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 29,
+          "too_short": 2,
+          "context:schedule_legend": 5
+        }
+      },
+      "3": {
+        "high": 0,
+        "medium": 0,
+        "reject": 4,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 4
+        }
+      },
+      "4": {
+        "high": 0,
+        "medium": 0,
+        "reject": 535,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 110,
+          "too_short": 27,
+          "context:schedule_legend": 398
+        }
+      },
+      "5": {
+        "high": 0,
+        "medium": 39,
+        "reject": 480,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          14.92,
+          14.86,
+          14.67,
+          14.48,
+          14.23,
+          14.07,
+          13.89,
+          13.8,
+          13.76,
+          13.47,
+          13.27,
+          13.09,
+          12.92,
+          12.86,
+          12.67,
+          12.48,
+          12.31,
+          12.23,
+          12.07,
+          10.92
+        ],
+        "reject_reasons": {
+          "density_cluster": 106,
+          "hatch_boundary": 360,
+          "too_short": 14
+        }
+      },
+      "6": {
+        "high": 0,
+        "medium": 0,
+        "reject": 738,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 13,
+          "density_cluster": 721,
+          "context:schedule_legend": 4
+        }
+      },
+      "7": {
+        "high": 0,
+        "medium": 2,
+        "reject": 106,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          11.84,
+          10.23
+        ],
+        "reject_reasons": {
+          "density_cluster": 105,
+          "hatch_boundary": 1
+        }
+      },
+      "8": {
+        "high": 5,
+        "medium": 5,
+        "reject": 146,
+        "context": "unknown",
+        "high_lengths": [
+          25.49,
+          24.59,
+          21.57,
+          18.55,
+          17.37
+        ],
+        "medium_lengths": [
+          14.11,
+          13.82,
+          12.97,
+          9.32,
+          8.62
+        ],
+        "reject_reasons": {
+          "density_cluster": 138,
+          "hatch_boundary": 8
+        }
+      },
+      "9": {
+        "high": 0,
+        "medium": 0,
+        "reject": 172,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 148,
+          "context:schedule_legend": 24
+        }
+      },
+      "10": {
+        "high": 0,
+        "medium": 0,
+        "reject": 167,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 139,
+          "context:schedule_legend": 28
+        }
+      },
+      "11": {
+        "high": 0,
+        "medium": 0,
+        "reject": 162,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 147,
+          "context:schedule_legend": 15
+        }
+      },
+      "12": {
+        "high": 0,
+        "medium": 0,
+        "reject": 159,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 137,
+          "context:schedule_legend": 22
+        }
+      },
+      "13": {
+        "high": 0,
+        "medium": 0,
+        "reject": 152,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 139,
+          "context:schedule_legend": 13
+        }
+      },
+      "14": {
+        "high": 0,
+        "medium": 0,
+        "reject": 41,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 14,
+          "density_cluster": 27
+        }
+      },
+      "15": {
+        "high": 0,
+        "medium": 0,
+        "reject": 15,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 15
+        }
+      },
+      "16": {
+        "high": 0,
+        "medium": 0,
+        "reject": 15,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 7,
+          "density_cluster": 8
+        }
+      },
+      "17": {
+        "high": 0,
+        "medium": 0,
+        "reject": 15,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 15
+        }
+      },
+      "18": {
+        "high": 0,
+        "medium": 0,
+        "reject": 15,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 7,
+          "density_cluster": 8
+        }
+      },
+      "19": {
+        "high": 0,
+        "medium": 0,
+        "reject": 16,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 8,
+          "density_cluster": 8
+        }
+      },
+      "20": {
+        "high": 0,
+        "medium": 0,
+        "reject": 800,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 729,
+          "context:schedule_legend": 71
+        }
+      },
+      "21": {
+        "high": 0,
+        "medium": 0,
+        "reject": 4,
+        "context": "foundation_plan",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 4
+        }
+      },
+      "22": {
+        "high": 2,
+        "medium": 3,
+        "reject": 170,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          24.46,
+          24.36
+        ],
+        "medium_lengths": [
+          14.86,
+          14.82,
+          9.6
+        ],
+        "reject_reasons": {
+          "density_cluster": 165,
+          "too_short": 5
+        }
+      },
+      "23": {
+        "high": 0,
+        "medium": 0,
+        "reject": 631,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 614,
+          "context:schedule_legend": 17
+        }
+      },
+      "24": {
+        "high": 8,
+        "medium": 4,
+        "reject": 142,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          32.76,
+          30.06,
+          28.06,
+          26.89,
+          26.52,
+          22.99,
+          21.28,
+          19.5
+        ],
+        "medium_lengths": [
+          13.81,
+          11.61,
+          10.2,
+          9.7
+        ],
+        "reject_reasons": {
+          "density_cluster": 134,
+          "too_short": 8
+        }
+      },
+      "25": {
+        "high": 0,
+        "medium": 0,
+        "reject": 126,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 119,
+          "too_short": 7
+        }
+      },
+      "26": {
+        "high": 0,
+        "medium": 0,
+        "reject": 394,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 388,
+          "context:schedule_legend": 2,
+          "too_short": 4
+        }
+      },
+      "27": {
+        "high": 0,
+        "medium": 3,
+        "reject": 124,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          9.7,
+          9.69,
+          9.55
+        ],
+        "reject_reasons": {
+          "density_cluster": 112,
+          "too_short": 12
+        }
+      },
+      "28": {
+        "high": 0,
+        "medium": 0,
+        "reject": 144,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 140,
+          "too_short": 4
+        }
+      },
+      "29": {
+        "high": 0,
+        "medium": 0,
+        "reject": 384,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 374,
+          "context:schedule_legend": 2,
+          "too_short": 8
+        }
+      },
+      "30": {
+        "high": 0,
+        "medium": 3,
+        "reject": 122,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.01,
+          9.7,
+          9.69
+        ],
+        "reject_reasons": {
+          "density_cluster": 109,
+          "too_short": 13
+        }
+      },
+      "31": {
+        "high": 1,
+        "medium": 0,
+        "reject": 133,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          26.8
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 126,
+          "too_short": 7
+        }
+      },
+      "32": {
+        "high": 0,
+        "medium": 0,
+        "reject": 388,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 376,
+          "context:schedule_legend": 4,
+          "too_short": 8
+        }
+      },
+      "33": {
+        "high": 0,
+        "medium": 3,
+        "reject": 122,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.01,
+          9.7,
+          9.69
+        ],
+        "reject_reasons": {
+          "density_cluster": 109,
+          "too_short": 13
+        }
+      },
+      "34": {
+        "high": 1,
+        "medium": 1,
+        "reject": 134,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          28.19
+        ],
+        "medium_lengths": [
+          13.37
+        ],
+        "reject_reasons": {
+          "density_cluster": 129,
+          "too_short": 5
+        }
+      },
+      "35": {
+        "high": 1,
+        "medium": 6,
+        "reject": 379,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          23.77
+        ],
+        "medium_lengths": [
+          14.74,
+          13.4,
+          12.34,
+          10.29,
+          10.23,
+          9.6
+        ],
+        "reject_reasons": {
+          "density_cluster": 370,
+          "hatch_boundary": 1,
+          "too_short": 8
+        }
+      },
+      "36": {
+        "high": 1,
+        "medium": 6,
+        "reject": 116,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          23.79
+        ],
+        "medium_lengths": [
+          14.73,
+          12.38,
+          10.25,
+          9.7,
+          9.69,
+          9.62
+        ],
+        "reject_reasons": {
+          "density_cluster": 108,
+          "hatch_boundary": 1,
+          "too_short": 7
+        }
+      },
+      "37": {
+        "high": 2,
+        "medium": 5,
+        "reject": 150,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          26.21,
+          26.04
+        ],
+        "medium_lengths": [
+          14.28,
+          13.93,
+          12.11,
+          10.01,
+          9.44
+        ],
+        "reject_reasons": {
+          "density_cluster": 149,
+          "too_short": 1
+        }
+      },
+      "38": {
+        "high": 0,
+        "medium": 0,
+        "reject": 449,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 438,
+          "context:schedule_legend": 8,
+          "too_short": 3
+        }
+      },
+      "39": {
+        "high": 3,
+        "medium": 9,
+        "reject": 118,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          42.38,
+          42.28,
+          32.53
+        ],
+        "medium_lengths": [
+          13.9,
+          13.86,
+          12.75,
+          12.38,
+          12.12,
+          9.82,
+          9.69,
+          9.56,
+          9.0
+        ],
+        "reject_reasons": {
+          "density_cluster": 111,
+          "too_short": 7
+        }
+      },
+      "40": {
+        "high": 0,
+        "medium": 1,
+        "reject": 11,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          10.24
+        ],
+        "reject_reasons": {
+          "too_short": 11
+        }
+      },
+      "41": {
+        "high": 3,
+        "medium": 2,
+        "reject": 431,
+        "context": "unknown",
+        "high_lengths": [
+          51.15,
+          21.18,
+          21.13
+        ],
+        "medium_lengths": [
+          12.07,
+          11.36
+        ],
+        "reject_reasons": {
+          "density_cluster": 429,
+          "hatch_boundary": 2
+        }
+      },
+      "42": {
+        "high": 0,
+        "medium": 3,
+        "reject": 301,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.07,
+          11.4,
+          9.59
+        ],
+        "reject_reasons": {
+          "density_cluster": 301
+        }
+      },
+      "43": {
+        "high": 0,
+        "medium": 0,
+        "reject": 306,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 301,
+          "context:schedule_legend": 5
+        }
+      },
+      "44": {
+        "high": 0,
+        "medium": 0,
+        "reject": 282,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 279,
+          "context:schedule_legend": 3
+        }
+      },
+      "45": {
+        "high": 0,
+        "medium": 0,
+        "reject": 291,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 286,
+          "context:schedule_legend": 5
+        }
+      },
+      "46": {
+        "high": 0,
+        "medium": 2,
+        "reject": 339,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          10.74,
+          9.1
+        ],
+        "reject_reasons": {
+          "density_cluster": 339
+        }
+      },
+      "47": {
+        "high": 0,
+        "medium": 1,
+        "reject": 447,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          9.34
+        ],
+        "reject_reasons": {
+          "density_cluster": 429,
+          "hatch_boundary": 13,
+          "too_short": 5
+        }
+      },
+      "48": {
+        "high": 0,
+        "medium": 7,
+        "reject": 405,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          9.01,
+          9.01,
+          9.0,
+          8.99,
+          8.98,
+          8.97,
+          8.97
+        ],
+        "reject_reasons": {
+          "hatch_boundary": 30,
+          "density_cluster": 368,
+          "detail_scale(9.0pt/ft\u21924.5ft)": 1,
+          "too_short": 6
+        }
+      },
+      "49": {
+        "high": 0,
+        "medium": 8,
+        "reject": 466,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          11.58,
+          11.41,
+          11.25,
+          9.01,
+          9.01,
+          9.01,
+          8.99,
+          8.19
+        ],
+        "reject_reasons": {
+          "density_cluster": 426,
+          "hatch_boundary": 36,
+          "too_short": 4
+        }
+      },
+      "50": {
+        "high": 13,
+        "medium": 1,
+        "reject": 64,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          41.67,
+          41.67,
+          41.67,
+          41.23,
+          41.21,
+          41.21,
+          31.28,
+          28.93,
+          28.93,
+          28.63,
+          28.63,
+          16.69,
+          16.1
+        ],
+        "medium_lengths": [
+          11.96
+        ],
+        "reject_reasons": {
+          "density_cluster": 64
+        }
+      },
+      "51": {
+        "high": 0,
+        "medium": 2,
+        "reject": 46,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          11.65,
+          11.6
+        ],
+        "reject_reasons": {
+          "density_cluster": 42,
+          "too_short": 4
+        }
+      },
+      "52": {
+        "high": 17,
+        "medium": 1,
+        "reject": 79,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          33.8,
+          33.78,
+          33.78,
+          33.78,
+          33.75,
+          33.75,
+          33.71,
+          32.97,
+          32.96,
+          32.95,
+          32.33,
+          32.31,
+          32.31,
+          32.31,
+          26.18,
+          25.93,
+          24.42
+        ],
+        "medium_lengths": [
+          9.5
+        ],
+        "reject_reasons": {
+          "density_cluster": 72,
+          "too_short": 7
+        }
+      },
+      "53": {
+        "high": 0,
+        "medium": 1,
+        "reject": 69,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          9.07
+        ],
+        "reject_reasons": {
+          "density_cluster": 63,
+          "too_short": 6
+        }
+      },
+      "54": {
+        "high": 20,
+        "medium": 12,
+        "reject": 382,
+        "context": "unknown",
+        "high_lengths": [
+          33.95,
+          33.95,
+          32.51,
+          32.0,
+          31.43,
+          30.17,
+          30.17,
+          28.6,
+          27.68,
+          27.33,
+          25.34,
+          24.52,
+          23.85,
+          23.84,
+          23.62,
+          22.99,
+          22.32,
+          22.32,
+          20.88,
+          19.93
+        ],
+        "medium_lengths": [
+          14.32,
+          14.32,
+          14.32,
+          14.32,
+          13.31,
+          13.31,
+          11.97,
+          11.92,
+          11.4,
+          11.06,
+          11.06,
+          11.05
+        ],
+        "reject_reasons": {
+          "density_cluster": 369,
+          "detail_scale(54.0pt/ft\u21922.2ft)": 2,
+          "detail_scale(864.0pt/ft\u21920.2ft)": 3,
+          "hatch_boundary": 7,
+          "detail_scale(54.0pt/ft\u21922.4ft)": 1
+        }
+      },
+      "55": {
+        "high": 6,
+        "medium": 10,
+        "reject": 150,
+        "context": "foundation_plan",
+        "high_lengths": [
+          16.3,
+          16.21,
+          15.71,
+          15.52,
+          15.17,
+          15.02
+        ],
+        "medium_lengths": [
+          13.7,
+          13.68,
+          13.68,
+          13.59,
+          13.59,
+          11.27,
+          9.99,
+          9.78,
+          9.56,
+          9.54
+        ],
+        "reject_reasons": {
+          "density_cluster": 131,
+          "too_short": 9,
+          "hatch_boundary": 10
+        }
+      },
+      "56": {
+        "high": 34,
+        "medium": 15,
+        "reject": 90,
+        "context": "unknown",
+        "high_lengths": [
+          42.68,
+          33.39,
+          32.02,
+          32.02,
+          32.0,
+          32.0,
+          31.88,
+          31.88,
+          29.9,
+          28.58,
+          27.84,
+          27.57,
+          25.08,
+          23.96,
+          22.55,
+          21.88,
+          21.75,
+          20.52,
+          20.05,
+          19.85
+        ],
+        "medium_lengths": [
+          14.96,
+          14.89,
+          14.61,
+          14.56,
+          14.1,
+          13.23,
+          11.41,
+          11.33,
+          11.31,
+          11.06,
+          11.05,
+          11.03,
+          10.75,
+          10.41,
+          10.13
+        ],
+        "reject_reasons": {
+          "detail_scale(54.0pt/ft\u21920.9ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.7ft)": 1,
+          "detail_scale(54.0pt/ft\u21923.7ft)": 1,
+          "density_cluster": 68,
+          "too_short": 12,
+          "detail_scale(54.0pt/ft\u21921.4ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.5ft)": 1,
+          "detail_scale(72.0pt/ft\u21921.2ft)": 1,
+          "detail_scale(72.0pt/ft\u21920.7ft)": 1,
+          "detail_scale(72.0pt/ft\u21921.0ft)": 2,
+          "detail_scale(72.0pt/ft\u21921.4ft)": 1
+        }
+      },
+      "57": {
+        "high": 0,
+        "medium": 0,
+        "reject": 28,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 20,
+          "too_short": 8
+        }
+      },
+      "58": {
+        "high": 0,
+        "medium": 0,
+        "reject": 315,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 247,
+          "context:schedule_legend": 68
+        }
+      },
+      "59": {
+        "high": 0,
+        "medium": 0,
+        "reject": 108,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 57,
+          "too_short": 15,
+          "context:schedule_legend": 36
+        }
+      },
+      "60": {
+        "high": 0,
+        "medium": 0,
+        "reject": 57,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 46,
+          "too_short": 11
+        }
+      },
+      "61": {
+        "high": 22,
+        "medium": 19,
+        "reject": 321,
+        "context": "foundation_plan",
+        "high_lengths": [
+          26.96,
+          26.51,
+          26.25,
+          25.81,
+          24.21,
+          23.43,
+          22.97,
+          22.51,
+          22.25,
+          21.82,
+          20.27,
+          19.72,
+          18.97,
+          18.52,
+          18.25,
+          17.82,
+          16.22,
+          16.22,
+          16.22,
+          15.98
+        ],
+        "medium_lengths": [
+          14.95,
+          14.52,
+          14.24,
+          13.82,
+          13.11,
+          12.78,
+          12.77,
+          12.49,
+          11.7,
+          11.45,
+          11.43,
+          10.96,
+          10.88,
+          10.52,
+          10.24,
+          10.07,
+          9.9,
+          9.82,
+          9.05
+        ],
+        "reject_reasons": {
+          "density_cluster": 289,
+          "hatch_boundary": 5,
+          "too_short": 9,
+          "detail_scale(9.0pt/ft\u21924.7ft)": 1,
+          "detail_scale(9.0pt/ft\u21925.7ft)": 2,
+          "detail_scale(9.0pt/ft\u21926.4ft)": 2,
+          "detail_scale(18.0pt/ft\u21924.1ft)": 1,
+          "detail_scale(54.0pt/ft\u21922.5ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.6ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.7ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.3ft)": 1,
+          "detail_scale(54.0pt/ft\u21920.8ft)": 1,
+          "detail_scale(36.0pt/ft\u21921.2ft)": 1,
+          "detail_scale(36.0pt/ft\u21923.4ft)": 1,
+          "detail_scale(36.0pt/ft\u21921.5ft)": 1,
+          "detail_scale(36.0pt/ft\u21921.4ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.1ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.0ft)": 1,
+          "detail_scale(36.0pt/ft\u21921.9ft)": 1
+        }
+      },
+      "62": {
+        "high": 10,
+        "medium": 13,
+        "reject": 232,
+        "context": "braced_frame_elevation",
+        "high_lengths": [
+          27.5,
+          25.02,
+          23.26,
+          22.42,
+          21.77,
+          21.12,
+          20.45,
+          15.85,
+          15.5,
+          15.3
+        ],
+        "medium_lengths": [
+          14.02,
+          13.89,
+          13.56,
+          12.92,
+          12.54,
+          11.68,
+          10.25,
+          8.91,
+          8.79,
+          8.61,
+          8.07,
+          8.05,
+          8.05
+        ],
+        "reject_reasons": {
+          "density_cluster": 218,
+          "too_short": 5,
+          "detail_scale(54.0pt/ft\u21921.2ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.7ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.8ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.5ft)": 2,
+          "detail_scale(54.0pt/ft\u21920.8ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.4ft)": 1,
+          "detail_scale(36.0pt/ft\u21921.6ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.2ft)": 1
+        }
+      },
+      "63": {
+        "high": 0,
+        "medium": 0,
+        "reject": 200,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 66,
+          "density_cluster": 127,
+          "too_short": 7
+        }
+      },
+      "64": {
+        "high": 0,
+        "medium": 0,
+        "reject": 345,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 78,
+          "density_cluster": 267
+        }
+      },
+      "65": {
+        "high": 65,
+        "medium": 16,
+        "reject": 227,
+        "context": "framing_plan",
+        "high_lengths": [
+          46.52,
+          44.5,
+          44.5,
+          44.5,
+          40.9,
+          40.8,
+          38.88,
+          38.88,
+          38.88,
+          36.89,
+          36.89,
+          36.89,
+          36.87,
+          36.87,
+          36.87,
+          34.75,
+          34.64,
+          34.58,
+          34.56,
+          34.56
+        ],
+        "medium_lengths": [
+          14.5,
+          14.31,
+          14.29,
+          14.28,
+          14.23,
+          14.16,
+          12.99,
+          12.86,
+          12.83,
+          12.35,
+          12.2,
+          11.98,
+          11.84,
+          11.82,
+          11.35,
+          11.12
+        ],
+        "reject_reasons": {
+          "density_cluster": 208,
+          "too_short": 6,
+          "detail_scale(54.0pt/ft\u21921.2ft)": 1,
+          "detail_scale(54.0pt/ft\u21922.7ft)": 1,
+          "detail_scale(54.0pt/ft\u21922.8ft)": 2,
+          "detail_scale(72.0pt/ft\u21922.6ft)": 3,
+          "detail_scale(72.0pt/ft\u21922.5ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.0ft)": 1,
+          "detail_scale(72.0pt/ft\u21920.8ft)": 1,
+          "detail_scale(72.0pt/ft\u21921.5ft)": 1,
+          "detail_scale(72.0pt/ft\u21921.2ft)": 2
+        }
+      },
+      "66": {
+        "high": 12,
+        "medium": 2,
+        "reject": 177,
+        "context": "framing_plan",
+        "high_lengths": [
+          40.2,
+          33.58,
+          33.56,
+          30.29,
+          29.75,
+          28.65,
+          24.29,
+          23.39,
+          22.05,
+          17.11,
+          16.83,
+          15.92
+        ],
+        "medium_lengths": [
+          13.95,
+          11.94
+        ],
+        "reject_reasons": {
+          "too_short": 12,
+          "density_cluster": 152,
+          "detail_scale(18.0pt/ft\u21925.2ft)": 6,
+          "hatch_boundary": 7
+        }
+      },
+      "67": {
+        "high": 0,
+        "medium": 0,
+        "reject": 485,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 378,
+          "context:schedule_legend": 105,
+          "too_short": 2
+        }
+      },
+      "68": {
+        "high": 0,
+        "medium": 0,
+        "reject": 337,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 13,
+          "density_cluster": 219,
+          "context:detail": 105
+        }
+      },
+      "69": {
+        "high": 0,
+        "medium": 0,
+        "reject": 11,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 4,
+          "context:detail": 7
+        }
+      },
+      "70": {
+        "high": 8,
+        "medium": 2,
+        "reject": 11,
+        "context": "unknown",
+        "high_lengths": [
+          49.12,
+          25.83,
+          25.33,
+          23.98,
+          18.32,
+          17.46,
+          17.3,
+          15.93
+        ],
+        "medium_lengths": [
+          11.51,
+          8.0
+        ],
+        "reject_reasons": {
+          "too_short": 6,
+          "detail_scale(36.0pt/ft\u21923.0ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.4ft)": 1,
+          "detail_scale(36.0pt/ft\u21923.4ft)": 1,
+          "detail_scale(36.0pt/ft\u21925.6ft)": 1,
+          "detail_scale(36.0pt/ft\u21924.8ft)": 1
+        }
+      },
+      "71": {
+        "high": 0,
+        "medium": 0,
+        "reject": 15,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 6,
+          "context:detail": 9
+        }
+      },
+      "72": {
+        "high": 0,
+        "medium": 0,
+        "reject": 31,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 19,
+          "context:detail": 12
+        }
+      },
+      "73": {
+        "high": 0,
+        "medium": 0,
+        "reject": 27,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 9,
+          "context:detail": 11,
+          "too_short": 7
+        }
+      }
+    }
+  },
+  "Latest_Structural dwg_Binder (Addendum-02).pdf": {
+    "pages": 17,
+    "pages_with_high": 8,
+    "total_high": 40,
+    "total_medium": 108,
+    "total_reject": 13010,
+    "page_detail": {
+      "0": {
+        "high": 2,
+        "medium": 8,
+        "reject": 116,
+        "context": "unknown",
+        "high_lengths": [
+          16.54,
+          15.93
+        ],
+        "medium_lengths": [
+          14.51,
+          13.78,
+          13.78,
+          12.78,
+          12.69,
+          11.74,
+          11.0,
+          9.61
+        ],
+        "reject_reasons": {
+          "density_cluster": 112,
+          "hatch_boundary": 4
+        }
+      },
+      "1": {
+        "high": 19,
+        "medium": 1,
+        "reject": 1192,
+        "context": "unknown",
+        "high_lengths": [
+          36.94,
+          33.55,
+          30.36,
+          29.62,
+          27.71,
+          25.32,
+          22.65,
+          22.64,
+          22.0,
+          21.1,
+          21.02,
+          21.01,
+          21.0,
+          16.81,
+          16.74,
+          16.74,
+          16.49,
+          16.47,
+          16.26
+        ],
+        "medium_lengths": [
+          14.69
+        ],
+        "reject_reasons": {
+          "density_cluster": 1121,
+          "hatch_boundary": 70,
+          "too_long": 1
+        }
+      },
+      "2": {
+        "high": 6,
+        "medium": 0,
+        "reject": 1222,
+        "context": "unknown",
+        "high_lengths": [
+          33.56,
+          26.76,
+          25.69,
+          21.63,
+          21.11,
+          21.1
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 1166,
+          "hatch_boundary": 56
+        }
+      },
+      "3": {
+        "high": 4,
+        "medium": 0,
+        "reject": 1641,
+        "context": "unknown",
+        "high_lengths": [
+          30.35,
+          28.78,
+          28.43,
+          25.33
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 1599,
+          "hatch_boundary": 41,
+          "too_long": 1
+        }
+      },
+      "4": {
+        "high": 0,
+        "medium": 0,
+        "reject": 1437,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 1382,
+          "context:schedule_legend": 55
+        }
+      },
+      "5": {
+        "high": 0,
+        "medium": 0,
+        "reject": 1408,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 1310,
+          "context:schedule_legend": 98
+        }
+      },
+      "6": {
+        "high": 0,
+        "medium": 10,
+        "reject": 1229,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          32.5,
+          31.26,
+          31.16,
+          26.15,
+          19.91,
+          18.42,
+          18.39,
+          18.39,
+          18.35,
+          15.16
+        ],
+        "reject_reasons": {
+          "density_cluster": 1169,
+          "hatch_boundary": 60
+        }
+      },
+      "7": {
+        "high": 0,
+        "medium": 0,
+        "reject": 286,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 274,
+          "context:schedule_legend": 12
+        }
+      },
+      "8": {
+        "high": 0,
+        "medium": 0,
+        "reject": 141,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 134,
+          "context:detail": 7
+        }
+      },
+      "9": {
+        "high": 0,
+        "medium": 0,
+        "reject": 23,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:detail": 5,
+          "too_short": 18
+        }
+      },
+      "10": {
+        "high": 2,
+        "medium": 9,
+        "reject": 533,
+        "context": "unknown",
+        "high_lengths": [
+          18.58,
+          18.58
+        ],
+        "medium_lengths": [
+          14.31,
+          12.53,
+          12.35,
+          9.67,
+          9.5,
+          9.47,
+          9.38,
+          8.92,
+          8.38
+        ],
+        "reject_reasons": {
+          "density_cluster": 520,
+          "detail_scale(27.0pt/ft\u21925.6ft)": 1,
+          "detail_scale(27.0pt/ft\u21925.2ft)": 1,
+          "too_short": 4,
+          "detail_scale(27.0pt/ft\u21922.7ft)": 2,
+          "detail_scale(54.0pt/ft\u21921.6ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.7ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.7ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.3ft)": 1,
+          "detail_scale(36.0pt/ft\u21922.4ft)": 1
+        }
+      },
+      "11": {
+        "high": 0,
+        "medium": 31,
+        "reject": 93,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          17.01,
+          14.97,
+          14.22,
+          14.15,
+          14.15,
+          13.87,
+          13.81,
+          13.81,
+          13.63,
+          13.62,
+          13.14,
+          12.89,
+          12.64,
+          12.53,
+          12.4,
+          12.18,
+          12.12,
+          11.6,
+          9.64,
+          9.64
+        ],
+        "reject_reasons": {
+          "density_cluster": 93
+        }
+      },
+      "12": {
+        "high": 1,
+        "medium": 19,
+        "reject": 950,
+        "context": "unknown",
+        "high_lengths": [
+          15.45
+        ],
+        "medium_lengths": [
+          14.29,
+          13.07,
+          12.78,
+          12.73,
+          12.01,
+          10.97,
+          10.76,
+          10.7,
+          10.54,
+          10.53,
+          10.44,
+          9.64,
+          9.5,
+          9.33,
+          8.94,
+          8.83,
+          8.68,
+          8.12,
+          8.06
+        ],
+        "reject_reasons": {
+          "density_cluster": 937,
+          "detail_scale(54.0pt/ft\u21921.6ft)": 2,
+          "detail_scale(54.0pt/ft\u21921.4ft)": 1,
+          "too_short": 4,
+          "hatch_boundary": 4,
+          "detail_scale(54.0pt/ft\u21927.0ft)": 1,
+          "detail_scale(54.0pt/ft\u21922.4ft)": 1
+        }
+      },
+      "13": {
+        "high": 0,
+        "medium": 14,
+        "reject": 134,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.77,
+          12.64,
+          12.64,
+          12.64,
+          11.54,
+          11.25,
+          11.01,
+          10.66,
+          10.66,
+          8.77,
+          8.66,
+          8.26,
+          8.19,
+          8.19
+        ],
+        "reject_reasons": {
+          "density_cluster": 126,
+          "detail_scale(54.0pt/ft\u21922.2ft)": 1,
+          "detail_scale(54.0pt/ft\u21922.0ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.4ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.7ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.3ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.8ft)": 2,
+          "detail_scale(54.0pt/ft\u21922.6ft)": 1
+        }
+      },
+      "14": {
+        "high": 1,
+        "medium": 10,
+        "reject": 61,
+        "context": "unknown",
+        "high_lengths": [
+          15.56
+        ],
+        "medium_lengths": [
+          14.49,
+          11.42,
+          10.76,
+          9.05,
+          9.04,
+          9.02,
+          8.98,
+          8.98,
+          8.84,
+          8.06
+        ],
+        "reject_reasons": {
+          "density_cluster": 44,
+          "too_short": 12,
+          "detail_scale(36.0pt/ft\u21922.1ft)": 1,
+          "hatch_boundary": 3,
+          "detail_scale(36.0pt/ft\u21922.7ft)": 1
+        }
+      },
+      "15": {
+        "high": 0,
+        "medium": 1,
+        "reject": 942,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          21.27
+        ],
+        "reject_reasons": {
+          "density_cluster": 910,
+          "hatch_boundary": 32
+        }
+      },
+      "16": {
+        "high": 5,
+        "medium": 5,
+        "reject": 1602,
+        "context": "unknown",
+        "high_lengths": [
+          25.5,
+          22.46,
+          17.08,
+          16.82,
+          16.71
+        ],
+        "medium_lengths": [
+          9.84,
+          9.79,
+          9.68,
+          9.51,
+          9.49
+        ],
+        "reject_reasons": {
+          "density_cluster": 1552,
+          "hatch_boundary": 50
+        }
+      }
+    }
+  },
+  "04_-_STRUCTURAL.pdf": {
+    "pages": 15,
+    "pages_with_high": 6,
+    "total_high": 52,
+    "total_medium": 50,
+    "total_reject": 881,
+    "page_detail": {
+      "0": {
+        "high": 0,
+        "medium": 0,
+        "reject": 2,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 2
+        }
+      },
+      "1": {
+        "high": 0,
+        "medium": 0,
+        "reject": 0,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {}
+      },
+      "2": {
+        "high": 0,
+        "medium": 0,
+        "reject": 0,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {}
+      },
+      "3": {
+        "high": 12,
+        "medium": 5,
+        "reject": 27,
+        "context": "unknown",
+        "high_lengths": [
+          75.91,
+          29.91,
+          29.91,
+          23.54,
+          21.86,
+          21.16,
+          20.46,
+          20.29,
+          19.16,
+          19.15,
+          16.43,
+          16.4
+        ],
+        "medium_lengths": [
+          9.03,
+          9.0,
+          9.0,
+          8.99,
+          8.7
+        ],
+        "reject_reasons": {
+          "too_short": 10,
+          "density_cluster": 17
+        }
+      },
+      "4": {
+        "high": 10,
+        "medium": 7,
+        "reject": 22,
+        "context": "unknown",
+        "high_lengths": [
+          75.91,
+          36.33,
+          36.33,
+          36.33,
+          36.33,
+          23.91,
+          23.89,
+          23.54,
+          23.39,
+          23.39
+        ],
+        "medium_lengths": [
+          11.9,
+          11.82,
+          10.92,
+          9.49,
+          9.48,
+          9.32,
+          9.3
+        ],
+        "reject_reasons": {
+          "density_cluster": 10,
+          "too_short": 12
+        }
+      },
+      "5": {
+        "high": 0,
+        "medium": 0,
+        "reject": 51,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 37,
+          "too_short": 5,
+          "context:detail": 9
+        }
+      },
+      "6": {
+        "high": 6,
+        "medium": 9,
+        "reject": 36,
+        "context": "framing_plan",
+        "high_lengths": [
+          75.91,
+          23.54,
+          23.51,
+          21.99,
+          15.81,
+          15.77
+        ],
+        "medium_lengths": [
+          12.03,
+          12.0,
+          12.0,
+          11.98,
+          10.74,
+          9.7,
+          9.43,
+          9.24,
+          8.5
+        ],
+        "reject_reasons": {
+          "density_cluster": 26,
+          "too_short": 10
+        }
+      },
+      "7": {
+        "high": 0,
+        "medium": 0,
+        "reject": 65,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:detail": 18,
+          "density_cluster": 41,
+          "too_short": 6
+        }
+      },
+      "8": {
+        "high": 12,
+        "medium": 7,
+        "reject": 39,
+        "context": "unknown",
+        "high_lengths": [
+          75.91,
+          31.25,
+          31.23,
+          31.23,
+          31.23,
+          31.23,
+          25.46,
+          25.46,
+          23.54,
+          20.46,
+          16.43,
+          16.41
+        ],
+        "medium_lengths": [
+          11.5,
+          9.22,
+          9.22,
+          9.11,
+          9.11,
+          9.11,
+          9.11
+        ],
+        "reject_reasons": {
+          "density_cluster": 32,
+          "too_short": 7
+        }
+      },
+      "9": {
+        "high": 11,
+        "medium": 13,
+        "reject": 51,
+        "context": "unknown",
+        "high_lengths": [
+          75.91,
+          57.55,
+          57.55,
+          38.35,
+          38.35,
+          38.35,
+          33.02,
+          23.54,
+          20.47,
+          16.43,
+          16.41
+        ],
+        "medium_lengths": [
+          13.61,
+          13.61,
+          13.61,
+          13.61,
+          13.61,
+          13.59,
+          10.75,
+          10.35,
+          9.92,
+          9.01,
+          8.92,
+          8.91,
+          8.06
+        ],
+        "reject_reasons": {
+          "density_cluster": 47,
+          "too_short": 4
+        }
+      },
+      "10": {
+        "high": 0,
+        "medium": 0,
+        "reject": 96,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:detail": 38,
+          "too_short": 18,
+          "density_cluster": 40
+        }
+      },
+      "11": {
+        "high": 0,
+        "medium": 0,
+        "reject": 19,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:detail": 8,
+          "too_short": 11
+        }
+      },
+      "12": {
+        "high": 0,
+        "medium": 0,
+        "reject": 379,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 349,
+          "context:detail": 25,
+          "too_short": 5
+        }
+      },
+      "13": {
+        "high": 1,
+        "medium": 9,
+        "reject": 65,
+        "context": "framing_plan",
+        "high_lengths": [
+          25.34
+        ],
+        "medium_lengths": [
+          14.13,
+          13.19,
+          12.93,
+          11.99,
+          11.99,
+          10.03,
+          9.86,
+          8.5,
+          8.0
+        ],
+        "reject_reasons": {
+          "too_short": 7,
+          "density_cluster": 58
+        }
+      },
+      "14": {
+        "high": 0,
+        "medium": 0,
+        "reject": 29,
+        "context": "detail",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:detail": 11,
+          "too_short": 18
+        }
+      }
+    }
+  },
+  "2026.03.27_Bayhealth Sussex MOB_DD Set_Structural.pdf": {
+    "pages": 19,
+    "pages_with_high": 11,
+    "total_high": 150,
+    "total_medium": 109,
+    "total_reject": 10735,
+    "page_detail": {
+      "0": {
+        "high": 0,
+        "medium": 0,
+        "reject": 9027,
+        "context": "framing_plan",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 8963,
+          "hatch_boundary": 56,
+          "too_long": 8
+        }
+      },
+      "1": {
+        "high": 0,
+        "medium": 0,
+        "reject": 8,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 4,
+          "too_short": 4
+        }
+      },
+      "2": {
+        "high": 0,
+        "medium": 0,
+        "reject": 49,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 21,
+          "density_cluster": 10,
+          "too_short": 18
+        }
+      },
+      "3": {
+        "high": 2,
+        "medium": 0,
+        "reject": 6,
+        "context": "unknown",
+        "high_lengths": [
+          16.5,
+          16.5
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 4,
+          "hatch_boundary": 2
+        }
+      },
+      "4": {
+        "high": 9,
+        "medium": 6,
+        "reject": 272,
+        "context": "unknown",
+        "high_lengths": [
+          24.03,
+          24.03,
+          24.03,
+          24.03,
+          23.5,
+          23.5,
+          18.0,
+          16.5,
+          16.5
+        ],
+        "medium_lengths": [
+          14.23,
+          14.07,
+          12.66,
+          11.9,
+          10.77,
+          9.49
+        ],
+        "reject_reasons": {
+          "density_cluster": 246,
+          "hatch_boundary": 19,
+          "too_short": 7
+        }
+      },
+      "5": {
+        "high": 15,
+        "medium": 2,
+        "reject": 68,
+        "context": "unknown",
+        "high_lengths": [
+          45.8,
+          45.8,
+          45.05,
+          45.05,
+          24.03,
+          24.03,
+          24.03,
+          24.03,
+          23.5,
+          23.5,
+          20.8,
+          20.8,
+          16.5,
+          16.5,
+          16.19
+        ],
+        "medium_lengths": [
+          11.62,
+          9.24
+        ],
+        "reject_reasons": {
+          "density_cluster": 50,
+          "hatch_boundary": 6,
+          "too_short": 11,
+          "detail_scale(9.0pt/ft\u21925.1ft)": 1
+        }
+      },
+      "6": {
+        "high": 16,
+        "medium": 0,
+        "reject": 37,
+        "context": "unknown",
+        "high_lengths": [
+          45.8,
+          45.8,
+          45.05,
+          45.05,
+          24.03,
+          24.03,
+          24.03,
+          24.03,
+          23.5,
+          23.5,
+          20.8,
+          20.8,
+          18.54,
+          18.54,
+          16.5,
+          16.5
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 28,
+          "hatch_boundary": 6,
+          "too_short": 3
+        }
+      },
+      "7": {
+        "high": 16,
+        "medium": 0,
+        "reject": 35,
+        "context": "unknown",
+        "high_lengths": [
+          45.8,
+          45.8,
+          45.05,
+          45.05,
+          24.03,
+          24.03,
+          24.03,
+          24.03,
+          23.5,
+          23.5,
+          20.8,
+          20.8,
+          18.54,
+          18.54,
+          16.5,
+          16.5
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 10,
+          "hatch_boundary": 6,
+          "density_cluster": 19
+        }
+      },
+      "8": {
+        "high": 10,
+        "medium": 13,
+        "reject": 88,
+        "context": "unknown",
+        "high_lengths": [
+          45.05,
+          45.05,
+          18.76,
+          18.54,
+          18.36,
+          17.6,
+          16.84,
+          16.5,
+          16.5,
+          15.67
+        ],
+        "medium_lengths": [
+          12.36,
+          12.05,
+          10.63,
+          10.49,
+          10.49,
+          10.49,
+          10.49,
+          10.49,
+          10.49,
+          9.34,
+          9.34,
+          9.22,
+          8.93
+        ],
+        "reject_reasons": {
+          "density_cluster": 72,
+          "too_short": 6,
+          "hatch_boundary": 10
+        }
+      },
+      "9": {
+        "high": 0,
+        "medium": 0,
+        "reject": 155,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 130,
+          "context:schedule_legend": 25
+        }
+      },
+      "10": {
+        "high": 0,
+        "medium": 0,
+        "reject": 37,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 15,
+          "context:schedule_legend": 22
+        }
+      },
+      "11": {
+        "high": 10,
+        "medium": 17,
+        "reject": 25,
+        "context": "unknown",
+        "high_lengths": [
+          39.67,
+          39.67,
+          31.47,
+          30.57,
+          22.2,
+          20.23,
+          19.89,
+          18.6,
+          16.5,
+          16.5
+        ],
+        "medium_lengths": [
+          14.44,
+          14.29,
+          13.12,
+          13.06,
+          12.88,
+          12.88,
+          12.67,
+          12.66,
+          12.65,
+          11.9,
+          11.05,
+          10.42,
+          10.41,
+          9.25,
+          9.22,
+          8.83,
+          8.69
+        ],
+        "reject_reasons": {
+          "too_short": 7,
+          "density_cluster": 16,
+          "hatch_boundary": 2
+        }
+      },
+      "12": {
+        "high": 0,
+        "medium": 0,
+        "reject": 26,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 10,
+          "context:schedule_legend": 11,
+          "too_short": 5
+        }
+      },
+      "13": {
+        "high": 5,
+        "medium": 29,
+        "reject": 41,
+        "context": "unknown",
+        "high_lengths": [
+          18.43,
+          16.6,
+          16.5,
+          16.5,
+          16.19
+        ],
+        "medium_lengths": [
+          14.73,
+          13.9,
+          13.81,
+          13.42,
+          13.27,
+          13.24,
+          12.93,
+          12.83,
+          12.77,
+          12.61,
+          12.46,
+          12.08,
+          11.58,
+          11.31,
+          11.31,
+          11.16,
+          11.14,
+          10.9,
+          10.58,
+          10.52
+        ],
+        "reject_reasons": {
+          "density_cluster": 32,
+          "too_short": 7,
+          "hatch_boundary": 2
+        }
+      },
+      "14": {
+        "high": 0,
+        "medium": 0,
+        "reject": 280,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 222,
+          "context:schedule_legend": 58
+        }
+      },
+      "15": {
+        "high": 11,
+        "medium": 15,
+        "reject": 19,
+        "context": "unknown",
+        "high_lengths": [
+          25.61,
+          25.56,
+          20.08,
+          19.25,
+          18.62,
+          18.27,
+          17.01,
+          16.5,
+          16.5,
+          16.3,
+          15.1
+        ],
+        "medium_lengths": [
+          13.37,
+          13.37,
+          13.01,
+          12.94,
+          12.3,
+          11.86,
+          10.99,
+          10.83,
+          10.12,
+          9.05,
+          9.0,
+          9.0,
+          8.91,
+          8.91,
+          8.68
+        ],
+        "reject_reasons": {
+          "density_cluster": 16,
+          "too_short": 1,
+          "hatch_boundary": 2
+        }
+      },
+      "16": {
+        "high": 0,
+        "medium": 0,
+        "reject": 35,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 29,
+          "too_short": 6
+        }
+      },
+      "17": {
+        "high": 12,
+        "medium": 4,
+        "reject": 401,
+        "context": "unknown",
+        "high_lengths": [
+          31.51,
+          31.51,
+          25.09,
+          24.3,
+          24.3,
+          21.28,
+          16.5,
+          16.5,
+          15.48,
+          15.45,
+          15.42,
+          15.42
+        ],
+        "medium_lengths": [
+          14.38,
+          14.11,
+          14.11,
+          13.23
+        ],
+        "reject_reasons": {
+          "density_cluster": 399,
+          "hatch_boundary": 2
+        }
+      },
+      "18": {
+        "high": 44,
+        "medium": 23,
+        "reject": 126,
+        "context": "unknown",
+        "high_lengths": [
+          44.87,
+          42.51,
+          42.51,
+          40.23,
+          40.23,
+          39.96,
+          39.96,
+          38.87,
+          38.87,
+          38.83,
+          38.83,
+          37.3,
+          37.29,
+          37.28,
+          37.23,
+          36.29,
+          36.16,
+          36.12,
+          31.06,
+          30.95
+        ],
+        "medium_lengths": [
+          14.08,
+          14.08,
+          14.06,
+          14.06,
+          13.78,
+          13.54,
+          13.54,
+          13.49,
+          13.49,
+          13.41,
+          13.35,
+          12.94,
+          12.6,
+          12.54,
+          11.63,
+          11.14,
+          10.86,
+          10.19,
+          10.13,
+          9.96
+        ],
+        "reject_reasons": {
+          "density_cluster": 106,
+          "too_short": 17,
+          "hatch_boundary": 3
+        }
+      }
+    }
+  },
+  "NCU SherMan_Structural.pdf": {
+    "pages": 6,
+    "pages_with_high": 3,
+    "total_high": 6,
+    "total_medium": 38,
+    "total_reject": 462,
+    "page_detail": {
+      "0": {
+        "high": 0,
+        "medium": 0,
+        "reject": 1,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 1
+        }
+      },
+      "1": {
+        "high": 2,
+        "medium": 5,
+        "reject": 214,
+        "context": "unknown",
+        "high_lengths": [
+          18.41,
+          16.15
+        ],
+        "medium_lengths": [
+          13.51,
+          13.05,
+          11.72,
+          11.24,
+          10.02
+        ],
+        "reject_reasons": {
+          "density_cluster": 200,
+          "hatch_boundary": 14
+        }
+      },
+      "2": {
+        "high": 1,
+        "medium": 11,
+        "reject": 135,
+        "context": "unknown",
+        "high_lengths": [
+          15.88
+        ],
+        "medium_lengths": [
+          13.46,
+          13.14,
+          11.77,
+          11.64,
+          11.29,
+          10.69,
+          10.68,
+          10.59,
+          10.37,
+          10.37,
+          10.02
+        ],
+        "reject_reasons": {
+          "density_cluster": 128,
+          "hatch_boundary": 3,
+          "too_short": 4
+        }
+      },
+      "3": {
+        "high": 3,
+        "medium": 6,
+        "reject": 53,
+        "context": "unknown",
+        "high_lengths": [
+          20.92,
+          20.91,
+          15.37
+        ],
+        "medium_lengths": [
+          12.43,
+          11.36,
+          11.13,
+          9.91,
+          9.9,
+          8.82
+        ],
+        "reject_reasons": {
+          "density_cluster": 30,
+          "too_short": 21,
+          "hatch_boundary": 2
+        }
+      },
+      "4": {
+        "high": 0,
+        "medium": 8,
+        "reject": 34,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          14.18,
+          13.19,
+          8.87,
+          8.83,
+          8.83,
+          8.54,
+          8.54,
+          8.0
+        ],
+        "reject_reasons": {
+          "too_short": 11,
+          "density_cluster": 23
+        }
+      },
+      "5": {
+        "high": 0,
+        "medium": 8,
+        "reject": 25,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          14.06,
+          11.58,
+          10.36,
+          10.34,
+          9.76,
+          9.32,
+          8.36,
+          8.0
+        ],
+        "reject_reasons": {
+          "density_cluster": 8,
+          "too_short": 17
+        }
+      }
+    }
+  },
+  "STRUCTURAL 5-26-26.pdf": {
+    "pages": 12,
+    "pages_with_high": 3,
+    "total_high": 8,
+    "total_medium": 43,
+    "total_reject": 1335,
+    "page_detail": {
+      "0": {
+        "high": 0,
+        "medium": 0,
+        "reject": 86,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 66,
+          "context:schedule_legend": 15,
+          "too_short": 5
+        }
+      },
+      "1": {
+        "high": 0,
+        "medium": 11,
+        "reject": 133,
+        "context": "framing_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          11.64,
+          11.64,
+          9.62,
+          9.61,
+          9.4,
+          9.11,
+          9.11,
+          8.79,
+          8.76,
+          8.08,
+          8.02
+        ],
+        "reject_reasons": {
+          "density_cluster": 122,
+          "too_short": 11
+        }
+      },
+      "2": {
+        "high": 2,
+        "medium": 11,
+        "reject": 55,
+        "context": "framing_plan",
+        "high_lengths": [
+          15.27,
+          15.27
+        ],
+        "medium_lengths": [
+          11.53,
+          11.43,
+          11.43,
+          9.63,
+          9.63,
+          9.41,
+          9.11,
+          9.11,
+          8.77,
+          8.08,
+          8.02
+        ],
+        "reject_reasons": {
+          "too_short": 4,
+          "density_cluster": 51
+        }
+      },
+      "3": {
+        "high": 0,
+        "medium": 0,
+        "reject": 294,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "context:schedule_legend": 13,
+          "too_short": 2,
+          "density_cluster": 279
+        }
+      },
+      "4": {
+        "high": 0,
+        "medium": 2,
+        "reject": 48,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.12,
+          12.11
+        ],
+        "reject_reasons": {
+          "too_short": 6,
+          "density_cluster": 42
+        }
+      },
+      "5": {
+        "high": 0,
+        "medium": 2,
+        "reject": 50,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.12,
+          12.12
+        ],
+        "reject_reasons": {
+          "too_short": 6,
+          "density_cluster": 44
+        }
+      },
+      "6": {
+        "high": 4,
+        "medium": 0,
+        "reject": 20,
+        "context": "unknown",
+        "high_lengths": [
+          24.53,
+          24.53,
+          24.53,
+          23.75
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "too_short": 4,
+          "density_cluster": 16
+        }
+      },
+      "7": {
+        "high": 2,
+        "medium": 6,
+        "reject": 38,
+        "context": "unknown",
+        "high_lengths": [
+          16.32,
+          16.07
+        ],
+        "medium_lengths": [
+          11.08,
+          11.07,
+          11.07,
+          10.9,
+          10.89,
+          10.89
+        ],
+        "reject_reasons": {
+          "density_cluster": 33,
+          "too_short": 5
+        }
+      },
+      "8": {
+        "high": 0,
+        "medium": 4,
+        "reject": 33,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [
+          12.84,
+          10.61,
+          10.61,
+          8.09
+        ],
+        "reject_reasons": {
+          "too_short": 18,
+          "detail_scale(54.0pt/ft\u21921.3ft)": 1,
+          "density_cluster": 10,
+          "detail_scale(54.0pt/ft\u21922.1ft)": 1,
+          "detail_scale(54.0pt/ft\u21922.8ft)": 1,
+          "detail_scale(54.0pt/ft\u21922.3ft)": 1,
+          "detail_scale(54.0pt/ft\u21921.4ft)": 1
+        }
+      },
+      "9": {
+        "high": 0,
+        "medium": 0,
+        "reject": 378,
+        "context": "unknown",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 376,
+          "too_short": 2
+        }
+      },
+      "10": {
+        "high": 0,
+        "medium": 7,
+        "reject": 200,
+        "context": "braced_frame_elevation",
+        "high_lengths": [],
+        "medium_lengths": [
+          9.33,
+          9.33,
+          9.33,
+          8.99,
+          8.99,
+          8.99,
+          8.99
+        ],
+        "reject_reasons": {
+          "density_cluster": 195,
+          "too_short": 4,
+          "detail_scale(54.0pt/ft\u21921.6ft)": 1
+        }
+      },
+      "11": {
+        "high": 0,
+        "medium": 0,
+        "reject": 0,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {}
+      }
+    }
+  },
+  "Pages from 2026.05.08_FF Martha Washington Building - Issued for Pricing.pdf": {
+    "pages": 1,
+    "pages_with_high": 1,
+    "total_high": 4,
+    "total_medium": 13,
+    "total_reject": 47,
+    "page_detail": {
+      "0": {
+        "high": 4,
+        "medium": 13,
+        "reject": 47,
+        "context": "framing_plan",
+        "high_lengths": [
+          34.0,
+          33.69,
+          16.98,
+          16.98
+        ],
+        "medium_lengths": [
+          13.68,
+          13.04,
+          12.45,
+          12.45,
+          12.22,
+          12.21,
+          9.69,
+          9.69,
+          8.5,
+          8.19,
+          8.19,
+          8.1,
+          8.1
+        ],
+        "reject_reasons": {
+          "density_cluster": 44,
+          "too_short": 3
+        }
+      }
+    }
+  },
+  "02 Struct 98 Spruce_2026-03-13_BID.pdf": {
+    "pages": 15,
+    "pages_with_high": 13,
+    "total_high": 74,
+    "total_medium": 132,
+    "total_reject": 2454,
+    "page_detail": {
+      "0": {
+        "high": 0,
+        "medium": 0,
+        "reject": 0,
+        "context": "schedule_legend",
+        "high_lengths": [],
+        "medium_lengths": [],
+        "reject_reasons": {}
+      },
+      "1": {
+        "high": 3,
+        "medium": 11,
+        "reject": 190,
+        "context": "foundation_plan",
+        "high_lengths": [
+          22.26,
+          20.58,
+          16.65
+        ],
+        "medium_lengths": [
+          14.96,
+          14.93,
+          11.94,
+          11.92,
+          10.1,
+          10.07,
+          9.68,
+          9.27,
+          9.27,
+          9.27,
+          9.27
+        ],
+        "reject_reasons": {
+          "density_cluster": 180,
+          "too_short": 8,
+          "hatch_boundary": 2
+        }
+      },
+      "2": {
+        "high": 3,
+        "medium": 10,
+        "reject": 221,
+        "context": "foundation_plan",
+        "high_lengths": [
+          22.26,
+          20.58,
+          16.65
+        ],
+        "medium_lengths": [
+          14.93,
+          11.92,
+          11.88,
+          10.1,
+          10.07,
+          9.68,
+          9.27,
+          9.27,
+          9.27,
+          9.27
+        ],
+        "reject_reasons": {
+          "density_cluster": 218,
+          "hatch_boundary": 2,
+          "too_short": 1
+        }
+      },
+      "3": {
+        "high": 8,
+        "medium": 5,
+        "reject": 456,
+        "context": "framing_plan",
+        "high_lengths": [
+          43.47,
+          43.47,
+          22.18,
+          22.18,
+          20.65,
+          20.65,
+          18.19,
+          15.19
+        ],
+        "medium_lengths": [
+          11.92,
+          11.33,
+          10.23,
+          10.07,
+          9.71
+        ],
+        "reject_reasons": {
+          "density_cluster": 455,
+          "hatch_boundary": 1
+        }
+      },
+      "4": {
+        "high": 7,
+        "medium": 4,
+        "reject": 456,
+        "context": "framing_plan",
+        "high_lengths": [
+          43.47,
+          43.47,
+          22.18,
+          22.18,
+          20.65,
+          20.65,
+          15.19
+        ],
+        "medium_lengths": [
+          11.92,
+          10.23,
+          10.08,
+          9.71
+        ],
+        "reject_reasons": {
+          "density_cluster": 455,
+          "hatch_boundary": 1
+        }
+      },
+      "5": {
+        "high": 8,
+        "medium": 5,
+        "reject": 155,
+        "context": "framing_plan",
+        "high_lengths": [
+          45.31,
+          45.31,
+          43.47,
+          43.47,
+          25.9,
+          22.18,
+          22.18,
+          16.68
+        ],
+        "medium_lengths": [
+          14.17,
+          12.08,
+          12.07,
+          9.76,
+          9.36
+        ],
+        "reject_reasons": {
+          "density_cluster": 145,
+          "too_short": 7,
+          "hatch_boundary": 3
+        }
+      },
+      "6": {
+        "high": 7,
+        "medium": 6,
+        "reject": 160,
+        "context": "framing_plan",
+        "high_lengths": [
+          45.31,
+          45.31,
+          43.47,
+          43.47,
+          22.18,
+          22.18,
+          15.42
+        ],
+        "medium_lengths": [
+          11.84,
+          9.97,
+          9.84,
+          9.68,
+          9.44,
+          8.1
+        ],
+        "reject_reasons": {
+          "density_cluster": 154,
+          "hatch_boundary": 5,
+          "too_short": 1
+        }
+      },
+      "7": {
+        "high": 0,
+        "medium": 26,
+        "reject": 223,
+        "context": "roof_plan",
+        "high_lengths": [],
+        "medium_lengths": [
+          45.31,
+          45.31,
+          43.46,
+          43.46,
+          25.34,
+          22.18,
+          22.18,
+          21.87,
+          18.58,
+          14.57,
+          14.29,
+          14.11,
+          11.96,
+          11.84,
+          11.23,
+          11.11,
+          10.15,
+          9.97,
+          9.84,
+          9.84
+        ],
+        "reject_reasons": {
+          "density_cluster": 209,
+          "hatch_boundary": 6,
+          "too_short": 8
+        }
+      },
+      "8": {
+        "high": 7,
+        "medium": 2,
+        "reject": 64,
+        "context": "framing_plan",
+        "high_lengths": [
+          45.31,
+          45.31,
+          43.47,
+          43.47,
+          22.18,
+          22.18,
+          15.48
+        ],
+        "medium_lengths": [
+          14.06,
+          10.81
+        ],
+        "reject_reasons": {
+          "too_short": 10,
+          "density_cluster": 52,
+          "hatch_boundary": 2
+        }
+      },
+      "9": {
+        "high": 4,
+        "medium": 0,
+        "reject": 45,
+        "context": "framing_plan",
+        "high_lengths": [
+          22.18,
+          22.18,
+          20.66,
+          20.66
+        ],
+        "medium_lengths": [],
+        "reject_reasons": {
+          "density_cluster": 35,
+          "too_short": 10
+        }
+      },
+      "10": {
+        "high": 5,
+        "medium": 19,
+        "reject": 139,
+        "context": "unknown",
+        "high_lengths": [
+          22.31,
+          17.78,
+          16.63,
+          15.92,
+          15.75
+        ],
+        "medium_lengths": [
+          13.83,
+          13.51,
+          12.48,
+          11.77,
+          11.41,
+          11.33,
+          11.04,
+          10.86,
+          10.16,
+          9.95,
+          9.82,
+          9.53,
+          9.49,
+          8.94,
+          8.81,
+          8.63,
+          8.6,
+          8.33,
+          8.18
+        ],
+        "reject_reasons": {
+          "density_cluster": 118,
+          "too_short": 11,
+          "hatch_boundary": 10
+        }
+      },
+      "11": {
+        "high": 13,
+        "medium": 14,
+        "reject": 147,
+        "context": "unknown",
+        "high_lengths": [
+          26.36,
+          21.62,
+          21.05,
+          18.03,
+          17.92,
+          16.62,
+          16.03,
+          15.87,
+          15.86,
+          15.84,
+          15.59,
+          15.26,
+          15.03
+        ],
+        "medium_lengths": [
+          14.96,
+          14.96,
+          14.64,
+          14.51,
+          11.43,
+          11.31,
+          11.23,
+          10.43,
+          10.17,
+          9.96,
+          9.41,
+          9.38,
+          9.26,
+          9.01
+        ],
+        "reject_reasons": {
+          "density_cluster": 140,
+          "too_short": 6,
+          "hatch_boundary": 1
+        }
+      },
+      "12": {
+        "high": 1,
+        "medium": 13,
+        "reject": 118,
+        "context": "unknown",
+        "high_lengths": [
+          18.28
+        ],
+        "medium_lengths": [
+          14.18,
+          11.86,
+          11.27,
+          10.88,
+          10.72,
+          10.68,
+          10.08,
+          9.95,
+          9.95,
+          9.77,
+          9.7,
+          9.31,
+          9.11
+        ],
+        "reject_reasons": {
+          "density_cluster": 114,
+          "hatch_boundary": 4
+        }
+      },
+      "13": {
+        "high": 2,
+        "medium": 7,
+        "reject": 72,
+        "context": "unknown",
+        "high_lengths": [
+          20.16,
+          20.16
+        ],
+        "medium_lengths": [
+          14.6,
+          13.64,
+          12.99,
+          11.48,
+          10.82,
+          10.82,
+          9.76
+        ],
+        "reject_reasons": {
+          "density_cluster": 63,
+          "too_short": 9
+        }
+      },
+      "14": {
+        "high": 6,
+        "medium": 10,
+        "reject": 8,
+        "context": "unknown",
+        "high_lengths": [
+          30.87,
+          26.25,
+          19.24,
+          19.24,
+          16.97,
+          16.97
+        ],
+        "medium_lengths": [
+          12.47,
+          12.0,
+          12.0,
+          11.51,
+          11.5,
+          11.49,
+          11.4,
+          11.27,
+          9.98,
+          9.02
+        ],
+        "reject_reasons": {
+          "too_short": 8
+        }
+      }
+    }
+  }
+}

@@ -21,6 +21,9 @@ interface Member {
   h: number;
   color: string;
   overridden?: boolean;
+  unlabeled?: boolean;  // geometry-detected beam with no section callout
+  confidence?: string;  // "HIGH" | "MEDIUM" — brace classifier confidence
+  angle_deg?: number;   // diagonal angle from horizontal (braces)
 }
 
 interface Summary {
@@ -122,6 +125,7 @@ export default function Home() {
   const [hoveredMember, setHoveredMember] = useState<Member | null>(null);
   const [tooltipPos, setTooltipPos]       = useState({ x: 0, y: 0 });
   const [zoomLevel, setZoomLevel]         = useState(1);
+  const [activeTab, setActiveTab]         = useState<"Plans" | "BOM">("Plans");
   const [contextMenu, setContextMenu]     = useState<ContextMenu | null>(null);
   const [cropMode, setCropMode]           = useState(false);
   const [cropDrag, setCropDrag]           = useState<CropRect | null>(null);
@@ -154,6 +158,7 @@ export default function Home() {
   }>>({});
   const [pageLoading, setPageLoading]         = useState(false);
   const [extracting, setExtracting]           = useState(false);
+  const [showUnlabelled, setShowUnlabelled]   = useState(false);
 
   const fileInputRef       = useRef<HTMLInputElement>(null);
   const imageWrapperRef    = useRef<HTMLDivElement>(null);
@@ -197,6 +202,39 @@ export default function Home() {
     }
     return { ...baseSummary, column, beam, vertical_brace, horizontal_brace };
   }, [members, baseSummary, cropRect, regionMembers]);
+
+  // ── BOM / material takeoff (per-profile) ──────────────────────────────────
+  // W/C/MC/S/HP/WT/MT/ST encode lb/ft as the number after the last 'X'
+  // (W12X19 = 19 lb/ft); HSS/L are dimensional → weight unknown on the client,
+  // so those rows show length only (the backend total stays authoritative).
+  const profileWeight = (p: string): number | null => {
+    const s = (p || "").toUpperCase().trim();
+    const m = s.match(/^(?:W|C|MC|S|HP|WT|MT|ST|M)\d+(?:\.\d+)?X(\d+(?:\.\d+)?)$/);
+    return m ? parseFloat(m[1]) : null;
+  };
+  const bomRows = useMemo(() => {
+    const src = cropRect ? regionMembers : members;
+    const map = new Map<string, { count: number; ft: number; w: number | null }>();
+    for (const m of src) {
+      if (m.type !== "beam") continue;
+      if (!m.profile || m.profile === "(beam?)") continue;
+      const e = map.get(m.profile) ?? { count: 0, ft: 0, w: profileWeight(m.profile) };
+      e.count += 1;
+      e.ft += m.length_ft || 0;
+      map.set(m.profile, e);
+    }
+    const rows = Array.from(map.entries()).map(([profile, e]) => ({
+      profile, count: e.count, ft: e.ft, w: e.w,
+      tons: e.w ? (e.w * e.ft) / 2000 : null,
+    }));
+    rows.sort((a, b) => (b.tons ?? 0) - (a.tons ?? 0));
+    const totalTons   = rows.reduce((s, r) => s + (r.tons ?? 0), 0);
+    const totalFt      = rows.reduce((s, r) => s + r.ft, 0);
+    const unsizedFt    = (cropRect ? regionMembers : members)
+      .filter(m => m.type === "beam" && (!m.profile || m.profile === "(beam?)"))
+      .reduce((s, m) => s + (m.length_ft || 0), 0);
+    return { rows, totalTons, totalFt, unsizedFt };
+  }, [members, regionMembers, cropRect]);
 
   // ── CLOSE CONTEXT MENU ON OUTSIDE CLICK ───────────────────────────────────
   useEffect(() => {
@@ -375,18 +413,19 @@ export default function Home() {
   }
 
   // ── CORE ANALYSIS (shared by scale-select and extract button) ────────────
-  async function runAnalysis(ratio: number, pageIdx: number) {
+  async function runAnalysis(ratio: number, pageIdx: number, detectUnlabelled?: boolean) {
+    const useUnlabelled = detectUnlabelled !== undefined ? detectUnlabelled : showUnlabelled;
     setExtracting(true);
     setStatus("estimating");
     setMembers([]);
-    showToast("blue", "Building blueprint. Please wait...");
+    showToast("blue", useUnlabelled ? "Building blueprint with unlabelled beams..." : "Building blueprint. Please wait...");
     try {
       const controller = new AbortController();
       const timeoutId  = setTimeout(() => controller.abort("Timeout"), 120000);
       const res = await fetch("http://localhost:8000/analyse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename, scale_ratio: ratio, page_index: pageIdx, ocr_dpi: 400 }),
+        body: JSON.stringify({ filename, scale_ratio: ratio, page_index: pageIdx, ocr_dpi: 400, detect_unlabeled: useUnlabelled, detect_braces: true }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -619,14 +658,20 @@ export default function Home() {
       }}>
         <span style={{ color: "white", fontWeight: "bold", fontSize: "16px" }}>Calsteel</span>
         <div style={{ display: "flex", gap: "4px", flex: 1, justifyContent: "center" }}>
-          {["Plans", "Columns", "Braces", "BOM", "Config"].map(tab => (
-            <div key={tab} style={{
-              padding: "4px 16px", fontSize: "14px",
-              color: tab === "Plans" ? "white" : "#64748B",
-              borderBottom: tab === "Plans" ? "2px solid #3B82F6" : "2px solid transparent",
-              cursor: tab === "Plans" ? "default" : "not-allowed", userSelect: "none",
-            }}>{tab}</div>
-          ))}
+          {["Plans", "Columns", "Braces", "BOM", "Config"].map(tab => {
+            const enabled = tab === "Plans" || tab === "BOM";
+            const active  = activeTab === tab;
+            return (
+              <div key={tab}
+                onClick={() => { if (enabled) setActiveTab(tab as "Plans" | "BOM"); }}
+                style={{
+                  padding: "4px 16px", fontSize: "14px",
+                  color: active ? "white" : enabled ? "#94A3B8" : "#64748B",
+                  borderBottom: active ? "2px solid #3B82F6" : "2px solid transparent",
+                  cursor: enabled ? "pointer" : "not-allowed", userSelect: "none",
+                }}>{tab}</div>
+            );
+          })}
         </div>
         <button onClick={() => setShowSaveModal(true)} style={{
           backgroundColor: "#15803D", border: "1px solid #166534", color: "white",
@@ -643,7 +688,83 @@ export default function Home() {
       </div>
 
       {/* MAIN BODY */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
+
+        {/* ── BOM / MATERIAL TAKEOFF VIEW ── */}
+        {activeTab === "BOM" && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 50, backgroundColor: "#0F172A",
+            overflow: "auto", padding: "24px 32px",
+          }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "4px" }}>
+              <h2 style={{ color: "white", fontSize: "20px", fontWeight: 700, margin: 0 }}>Bill of Materials</h2>
+              <span style={{ color: "#64748B", fontSize: "13px" }}>
+                {cropRect ? "selected region" : "full sheet"} · steel beam takeoff
+              </span>
+            </div>
+            {/* Headline totals */}
+            <div style={{ display: "flex", gap: "16px", margin: "16px 0 20px" }}>
+              {[
+                { label: "Total Weight", value: `${bomRows.totalTons.toFixed(2)} t`, hi: true },
+                { label: "Sized length", value: `${Math.round(bomRows.totalFt).toLocaleString()} ft` },
+                { label: "Sections", value: `${bomRows.rows.length}` },
+                { label: "Unsized (unlabeled)", value: `${Math.round(bomRows.unsizedFt).toLocaleString()} ft`, warn: bomRows.unsizedFt > 0 },
+              ].map(c => (
+                <div key={c.label} style={{
+                  backgroundColor: "#1E293B", border: "1px solid #334155", borderRadius: "8px",
+                  padding: "12px 18px", minWidth: "140px",
+                }}>
+                  <div style={{ color: "#64748B", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{c.label}</div>
+                  <div style={{ color: c.hi ? "#34D399" : c.warn ? "#FBBF24" : "white", fontSize: "22px", fontWeight: 700, marginTop: "4px" }}>{c.value}</div>
+                </div>
+              ))}
+            </div>
+            {/* Per-profile table */}
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+              <thead>
+                <tr style={{ color: "#94A3B8", textAlign: "left", borderBottom: "1px solid #334155" }}>
+                  <th style={{ padding: "8px 12px" }}>Profile</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Qty</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Total Length (ft)</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Weight (lb/ft)</th>
+                  <th style={{ padding: "8px 12px", textAlign: "right" }}>Weight (tons)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bomRows.rows.length === 0 && (
+                  <tr><td colSpan={5} style={{ padding: "24px 12px", color: "#64748B", textAlign: "center" }}>
+                    No sized beams yet — extract a labeled framing plan to populate the takeoff.
+                  </td></tr>
+                )}
+                {bomRows.rows.map(r => (
+                  <tr key={r.profile} style={{ color: "#E2E8F0", borderBottom: "1px solid #1E293B" }}>
+                    <td style={{ padding: "8px 12px", fontWeight: 600 }}>{r.profile}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right" }}>{r.count}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right" }}>{r.ft.toFixed(1)}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right", color: r.w ? "#E2E8F0" : "#64748B" }}>{r.w ?? "—"}</td>
+                    <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: r.tons ? "#34D399" : "#64748B" }}>{r.tons != null ? r.tons.toFixed(2) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+              {bomRows.rows.length > 0 && (
+                <tfoot>
+                  <tr style={{ color: "white", fontWeight: 700, borderTop: "2px solid #334155" }}>
+                    <td style={{ padding: "10px 12px" }}>Total</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right" }}>{bomRows.rows.reduce((s, r) => s + r.count, 0)}</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right" }}>{bomRows.totalFt.toFixed(1)}</td>
+                    <td></td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", color: "#34D399" }}>{bomRows.totalTons.toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+            {bomRows.unsizedFt > 0 && (
+              <div style={{ marginTop: "16px", color: "#64748B", fontSize: "12px" }}>
+                Note: {Math.round(bomRows.unsizedFt).toLocaleString()} ft of unlabeled <code>(beam?)</code> members are not weighed — assign sizes to include them.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* LEFT SIDEBAR */}
         <div style={{
@@ -723,6 +844,32 @@ export default function Home() {
               }}>
                 {status === "built" ? "Built" : status === "estimating" ? "Estimating" : "Not Set"}
               </span>
+            </div>
+
+            {/* Unlabelled beams toggle */}
+            <div style={{ padding: "0 4px", marginBottom: "8px" }}>
+              <button
+                onClick={() => {
+                  const next = !showUnlabelled;
+                  setShowUnlabelled(next);
+                  if (selectedRatio) runAnalysis(selectedRatio, currentPageIdx, next);
+                }}
+                disabled={extracting}
+                title="Show/hide unlabelled beams detected from drawn geometry"
+                style={{
+                  width: "100%", borderRadius: "5px", padding: "6px 0",
+                  fontSize: "11px", fontWeight: "600",
+                  cursor: extracting ? "not-allowed" : "pointer",
+                  backgroundColor: showUnlabelled ? "#7C3AED" : "#1E293B",
+                  color: showUnlabelled ? "white" : "#94A3B8",
+                  border: `1px solid ${showUnlabelled ? "#8B5CF6" : "#334155"}`,
+                  transition: "all 0.15s",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+                }}
+              >
+                <span style={{ fontSize: "10px" }}>{showUnlabelled ? "●" : "○"}</span>
+                {showUnlabelled ? "Unlabelled ON" : "Unlabelled OFF"}
+              </button>
             </div>
 
             {/* Extract button */}
@@ -900,19 +1047,72 @@ export default function Home() {
                 </defs>
                 {members.map((m, idx) => {
                   if (m.type !== "beam") return null;
-                  if (m.bx1 == null || m.by1 == null || m.bx2 == null || m.by2 == null) return null;
+                  const hasSpan = m.bx1 != null && m.by1 != null && m.bx2 != null && m.by2 != null;
                   const isHovered = hoveredMember === m;
+
+                  if (hasSpan) {
+                    return (
+                      <line
+                        key={idx}
+                        x1={`${m.bx1! * 100}%`} y1={`${m.by1! * 100}%`}
+                        x2={`${m.bx2! * 100}%`} y2={`${m.by2! * 100}%`}
+                        stroke={m.overridden ? "#FBBF24" : m.color}
+                        strokeWidth={isHovered ? "3.5" : "2.5"}
+                        strokeOpacity={isHovered ? "0.92" : "0.68"}
+                        strokeLinecap="round"
+                        filter={isHovered ? "url(#beam-glow)" : undefined}
+                      />
+                    );
+                  }
+
+                  // Fallback: beam extracted but span endpoints not computed.
+                  // Draw a dashed line centred at the label position, length
+                  // derived from length_ft and scale so it approximates the
+                  // real beam span. Assumes ~36" paper width.
+                  const cx = m.lx ?? m.x;
+                  const cy = m.ly ?? m.y;
+                  const isVert = m.beam_dir === "V";
+                  const half = (m.length_ft ?? 20) / ((selectedRatio ?? 96) * 6);
+                  const wRatio = wrapperSize.w / Math.max(wrapperSize.h, 1);
                   return (
                     <line
                       key={idx}
-                      x1={`${m.bx1 * 100}%`} y1={`${m.by1 * 100}%`}
-                      x2={`${m.bx2 * 100}%`} y2={`${m.by2 * 100}%`}
+                      x1={`${(cx - (isVert ? 0 : half)) * 100}%`}
+                      y1={`${(cy - (isVert ? half / wRatio : 0)) * 100}%`}
+                      x2={`${(cx + (isVert ? 0 : half)) * 100}%`}
+                      y2={`${(cy + (isVert ? half / wRatio : 0)) * 100}%`}
                       stroke={m.overridden ? "#FBBF24" : m.color}
-                      strokeWidth={isHovered ? "3.5" : "2.5"}
-                      strokeOpacity={isHovered ? "0.92" : "0.68"}
+                      strokeWidth="2"
+                      strokeOpacity="0.42"
+                      strokeDasharray="6 3"
                       strokeLinecap="round"
-                      filter={isHovered ? "url(#beam-glow)" : undefined}
                     />
+                  );
+                })}
+                {/* Brace diagonal lines */}
+                {members.map((m, idx) => {
+                  if (m.type !== "brace") return null;
+                  if (m.bx1 == null || m.by1 == null || m.bx2 == null || m.by2 == null) return null;
+                  const isHigh   = m.confidence === "HIGH";
+                  const isHovered = hoveredMember === m;
+                  const x1 = `${m.bx1 * 100}%`;
+                  const y1 = `${m.by1 * 100}%`;
+                  const x2 = `${m.bx2 * 100}%`;
+                  const y2 = `${m.by2 * 100}%`;
+                  return (
+                    <g key={`brace-${idx}`}>
+                      <line
+                        x1={x1} y1={y1} x2={x2} y2={y2}
+                        stroke="#F59E0B"
+                        strokeWidth={isHovered ? "4" : isHigh ? "2.5" : "2"}
+                        strokeOpacity={isHovered ? 0.95 : isHigh ? 0.82 : 0.5}
+                        strokeDasharray={isHigh ? undefined : "8 4"}
+                        strokeLinecap="round"
+                        filter={isHovered ? "url(#beam-glow)" : undefined}
+                      />
+                      <circle cx={x1} cy={y1} r="3" fill="#F59E0B" fillOpacity={isHigh ? 0.9 : 0.5} />
+                      <circle cx={x2} cy={y2} r="3" fill="#F59E0B" fillOpacity={isHigh ? 0.9 : 0.5} />
+                    </g>
                   );
                 })}
                 {/* Saved ruler lines */}
@@ -1097,9 +1297,16 @@ export default function Home() {
                           transition: "all 0.1s",
                           letterSpacing: "0.02em",
                         }}>
-                          {m.profile}
+                          {/* For unlabelled beams, show length only — no section profile is known yet */}
+                          {!m.unlabeled && m.profile && m.profile !== "(beam?)" && (
+                            <span>{m.profile}</span>
+                          )}
                           {m.length_ft > 0 && (
-                            <span style={{ color: "#FBD0E8", fontWeight: 400, marginLeft: "3px" }}>
+                            <span style={{
+                              color: m.unlabeled ? "#FDE68A" : "#FBD0E8",
+                              fontWeight: 400,
+                              marginLeft: (!m.unlabeled && m.profile && m.profile !== "(beam?)") ? "3px" : "0px",
+                            }}>
                               {formatFt(m.length_ft)}
                             </span>
                           )}
@@ -1210,6 +1417,20 @@ export default function Home() {
                 <div style={{ width: "10px", height: "10px", border: "1px dashed #FBBF24", borderRadius: "2px" }} />
                 <span style={{ color: "#FBBF24", fontSize: "11px" }}>Corrected</span>
               </div>
+              {showUnlabelled && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ position: "relative", width: "36px", height: "14px" }}>
+                    <div style={{ position: "absolute", top: "6px", left: 0, right: 0, height: "2px", backgroundColor: "#F59E0B", opacity: 0.75, borderRadius: "1px" }} />
+                    <div style={{
+                      position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+                      backgroundColor: "#78350F88", border: "1px solid #F59E0B",
+                      borderRadius: "3px", padding: "0 3px",
+                      fontSize: "7px", fontWeight: "700", color: "white", whiteSpace: "nowrap",
+                    }}>beam?</div>
+                  </div>
+                  <span style={{ color: "#F59E0B", fontSize: "11px" }}>Unlabelled</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
