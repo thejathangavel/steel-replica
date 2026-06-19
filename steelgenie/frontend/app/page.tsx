@@ -22,6 +22,8 @@ interface Member {
   color: string;
   overridden?: boolean;
   unlabeled?: boolean;  // geometry-detected beam with no section callout
+  confidence?: string;  // "HIGH" | "MEDIUM" — brace classifier confidence
+  angle_deg?: number;   // diagonal angle from horizontal (braces)
 }
 
 interface Summary {
@@ -423,7 +425,7 @@ export default function Home() {
       const res = await fetch("http://localhost:8000/analyse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename, scale_ratio: ratio, page_index: pageIdx, ocr_dpi: 400, detect_unlabeled: useUnlabelled }),
+        body: JSON.stringify({ filename, scale_ratio: ratio, page_index: pageIdx, ocr_dpi: 400, detect_unlabeled: useUnlabelled, detect_braces: true }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -1045,19 +1047,72 @@ export default function Home() {
                 </defs>
                 {members.map((m, idx) => {
                   if (m.type !== "beam") return null;
-                  if (m.bx1 == null || m.by1 == null || m.bx2 == null || m.by2 == null) return null;
+                  const hasSpan = m.bx1 != null && m.by1 != null && m.bx2 != null && m.by2 != null;
                   const isHovered = hoveredMember === m;
+
+                  if (hasSpan) {
+                    return (
+                      <line
+                        key={idx}
+                        x1={`${m.bx1! * 100}%`} y1={`${m.by1! * 100}%`}
+                        x2={`${m.bx2! * 100}%`} y2={`${m.by2! * 100}%`}
+                        stroke={m.overridden ? "#FBBF24" : m.color}
+                        strokeWidth={isHovered ? "3.5" : "2.5"}
+                        strokeOpacity={isHovered ? "0.92" : "0.68"}
+                        strokeLinecap="round"
+                        filter={isHovered ? "url(#beam-glow)" : undefined}
+                      />
+                    );
+                  }
+
+                  // Fallback: beam extracted but span endpoints not computed.
+                  // Draw a dashed line centred at the label position, length
+                  // derived from length_ft and scale so it approximates the
+                  // real beam span. Assumes ~36" paper width.
+                  const cx = m.lx ?? m.x;
+                  const cy = m.ly ?? m.y;
+                  const isVert = m.beam_dir === "V";
+                  const half = (m.length_ft ?? 20) / ((selectedRatio ?? 96) * 6);
+                  const wRatio = wrapperSize.w / Math.max(wrapperSize.h, 1);
                   return (
                     <line
                       key={idx}
-                      x1={`${m.bx1 * 100}%`} y1={`${m.by1 * 100}%`}
-                      x2={`${m.bx2 * 100}%`} y2={`${m.by2 * 100}%`}
+                      x1={`${(cx - (isVert ? 0 : half)) * 100}%`}
+                      y1={`${(cy - (isVert ? half / wRatio : 0)) * 100}%`}
+                      x2={`${(cx + (isVert ? 0 : half)) * 100}%`}
+                      y2={`${(cy + (isVert ? half / wRatio : 0)) * 100}%`}
                       stroke={m.overridden ? "#FBBF24" : m.color}
-                      strokeWidth={isHovered ? "3.5" : "2.5"}
-                      strokeOpacity={isHovered ? "0.92" : "0.68"}
+                      strokeWidth="2"
+                      strokeOpacity="0.42"
+                      strokeDasharray="6 3"
                       strokeLinecap="round"
-                      filter={isHovered ? "url(#beam-glow)" : undefined}
                     />
+                  );
+                })}
+                {/* Brace diagonal lines */}
+                {members.map((m, idx) => {
+                  if (m.type !== "brace") return null;
+                  if (m.bx1 == null || m.by1 == null || m.bx2 == null || m.by2 == null) return null;
+                  const isHigh   = m.confidence === "HIGH";
+                  const isHovered = hoveredMember === m;
+                  const x1 = `${m.bx1 * 100}%`;
+                  const y1 = `${m.by1 * 100}%`;
+                  const x2 = `${m.bx2 * 100}%`;
+                  const y2 = `${m.by2 * 100}%`;
+                  return (
+                    <g key={`brace-${idx}`}>
+                      <line
+                        x1={x1} y1={y1} x2={x2} y2={y2}
+                        stroke="#F59E0B"
+                        strokeWidth={isHovered ? "4" : isHigh ? "2.5" : "2"}
+                        strokeOpacity={isHovered ? 0.95 : isHigh ? 0.82 : 0.5}
+                        strokeDasharray={isHigh ? undefined : "8 4"}
+                        strokeLinecap="round"
+                        filter={isHovered ? "url(#beam-glow)" : undefined}
+                      />
+                      <circle cx={x1} cy={y1} r="3" fill="#F59E0B" fillOpacity={isHigh ? 0.9 : 0.5} />
+                      <circle cx={x2} cy={y2} r="3" fill="#F59E0B" fillOpacity={isHigh ? 0.9 : 0.5} />
+                    </g>
                   );
                 })}
                 {/* Saved ruler lines */}

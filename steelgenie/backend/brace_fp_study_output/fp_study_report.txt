@@ -1,0 +1,320 @@
+============================================================================
+  FALSE-POSITIVE STUDY — HIGH Confidence Brace Classifier
+============================================================================
+
+────────────────────────────────────────────────────────────────────────────
+  GROUP A_elevation
+────────────────────────────────────────────────────────────────────────────
+
+  A_elevation_01  [07_STRUCTURAL_COMBINED.pd p49]
+    length  : 95.99 ft
+    angle   : 51.5 deg
+    stroke  : 0.36 pt
+    coords  : (732,863) → (1001,525)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_01_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_01_crop.png
+
+  A_elevation_02  [07_STRUCTURAL_COMBINED.pd p47]
+    length  : 93.77 ft
+    angle   : 52.2 deg
+    stroke  : 0.36 pt
+    coords  : (384,1727) → (642,1393)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_02_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_02_crop.png
+
+  A_elevation_03  [07_STRUCTURAL_COMBINED.pd p48]
+    length  : 93.60 ft
+    angle   : 52.2 deg
+    stroke  : 0.36 pt
+    coords  : (374,1218) → (632,885)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_03_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_03_crop.png
+
+  A_elevation_04  [Structural_snaps.pdf p7]
+    length  : 38.88 ft
+    angle   : 49.9 deg
+    stroke  : 2.00 pt
+    coords  : (2058,516) → (2284,249)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_04_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_04_crop.png
+
+  A_elevation_05  [Structural_snaps.pdf p6]
+    length  : 36.88 ft
+    angle   : 40.2 deg
+    stroke  : 0.24 pt
+    coords  : (487,1218) → (740,1432)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_05_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_05_crop.png
+
+  A_elevation_06  [07_STRUCTURAL_COMBINED.pd p49]
+    length  : 94.34 ft
+    angle   : 51.8 deg
+    stroke  : 0.36 pt
+    coords  : (739,1981) → (1001,1648)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_06_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_06_crop.png
+
+  A_elevation_07  [07_STRUCTURAL_COMBINED.pd p47]
+    length  : 83.35 ft
+    angle   : 46.4 deg
+    stroke  : 0.36 pt
+    coords  : (637,763) → (378,492)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_07_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_07_crop.png
+
+  A_elevation_08  [07_STRUCTURAL_COMBINED.pd p48]
+    length  : 92.71 ft
+    angle   : 50.7 deg
+    stroke  : 0.36 pt
+    coords  : (362,1841) → (626,2164)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_08_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_08_crop.png
+
+  A_elevation_09  [Structural_snaps.pdf p7]
+    length  : 34.13 ft
+    angle   : 46.1 deg
+    stroke  : 2.00 pt
+    coords  : (1623,788) → (1410,566)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_09_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_09_crop.png
+
+  A_elevation_10  [Structural_snaps.pdf p6]
+    length  : 25.13 ft
+    angle   : 50.1 deg
+    stroke  : 0.24 pt
+    coords  : (1263,399) → (1118,573)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_10_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\A_elevation_10_crop.png
+
+────────────────────────────────────────────────────────────────────────────
+  GROUP B_framing
+────────────────────────────────────────────────────────────────────────────
+
+  B_framing_11  [Structural_snaps.pdf p2]
+    length  : 70.38 ft
+    angle   : 60.3 deg
+    stroke  : 2.00 pt
+    coords  : (620,761) → (934,1311)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_11_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_11_crop.png
+
+  B_framing_12  [Structural_binder.pdf p12]
+    length  : 66.23 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (1459,718) → (827,1350)
+    scale   : 1:64 (13.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_12_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_12_crop.png
+
+  B_framing_13  [07_STRUCTURAL_COMBINED.pd p13]
+    length  : 30.22 ft
+    angle   : 41.8 deg
+    stroke  : 0.36 pt
+    coords  : (572,633) → (673,723)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_13_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_13_crop.png
+
+  B_framing_14  [Structural_snaps.pdf p5]
+    length  : 26.93 ft
+    angle   : 64.6 deg
+    stroke  : 1.93 pt
+    coords  : (54,1132) → (158,913)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_14_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_14_crop.png
+
+  B_framing_15  [07_STRUCTURAL_COMBINED.pd p9]
+    length  : 25.89 ft
+    angle   : 45.3 deg
+    stroke  : 0.36 pt
+    coords  : (569,759) → (651,842)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_15_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_15_crop.png
+
+  B_framing_16  [07_STRUCTURAL_COMBINED.pd p8]
+    length  : 25.49 ft
+    angle   : 31.4 deg
+    stroke  : 0.36 pt
+    coords  : (569,2512) → (667,2452)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    [render error: tile cannot extend outside image]
+
+  B_framing_17  [Structural_binder.pdf p16]
+    length  : 20.20 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (1129,860) → (937,1052)
+    scale   : 1:64 (13.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_17_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_17_crop.png
+
+  B_framing_18  [Structural_snaps.pdf p2]
+    length  : 48.73 ft
+    angle   : 44.3 deg
+    stroke  : 2.00 pt
+    coords  : (934,1005) → (620,1311)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_18_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_18_crop.png
+
+  B_framing_19  [Structural_binder.pdf p12]
+    length  : 63.56 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (1433,718) → (827,1325)
+    scale   : 1:64 (13.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_19_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_19_crop.png
+
+  B_framing_20  [07_STRUCTURAL_COMBINED.pd p13]
+    length  : 26.95 ft
+    angle   : 30.4 deg
+    stroke  : 0.36 pt
+    coords  : (568,662) → (673,723)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_20_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\B_framing_20_crop.png
+
+────────────────────────────────────────────────────────────────────────────
+  GROUP C_roof
+────────────────────────────────────────────────────────────────────────────
+
+  C_roof_21  [Latest_Structural_dwg_Bin p1]
+    length  : 253.73 ft
+    angle   : 22.0 deg
+    stroke  : 0.24 pt
+    coords  : (272,971) → (2389,1827)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_21_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_21_crop.png
+
+  C_roof_22  [Structural_snaps.pdf p3]
+    length  : 72.01 ft
+    angle   : 32.0 deg
+    stroke  : 3.00 pt
+    coords  : (1672,1554) → (2221,1210)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_22_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_22_crop.png
+
+  C_roof_23  [07_STRUCTURAL_COMBINED.pd p20]
+    length  : 51.89 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (1215,979) → (1050,1144)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_23_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_23_crop.png
+
+  C_roof_24  [Structural_binder.pdf p11]
+    length  : 25.69 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (2250,1376) → (2496,1131)
+    scale   : 1:64 (13.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_24_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_24_crop.png
+
+  C_roof_25  [Structural_binder.pdf p10]
+    length  : 25.66 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (1270,1782) → (1515,1537)
+    scale   : 1:64 (13.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_25_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_25_crop.png
+
+  C_roof_26  [Latest_Structural_dwg_Bin p1]
+    length  : 140.34 ft
+    angle   : 22.0 deg
+    stroke  : 1.20 pt
+    coords  : (523,431) → (1694,904)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_26_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_26_crop.png
+
+  C_roof_27  [Structural_snaps.pdf p3]
+    length  : 70.54 ft
+    angle   : 32.4 deg
+    stroke  : 3.00 pt
+    coords  : (1671,1212) → (2207,1552)
+    scale   : 1:96 (9.00 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_27_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_27_crop.png
+
+  C_roof_28  [07_STRUCTURAL_COMBINED.pd p20]
+    length  : 50.97 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (1212,1144) → (1049,982)
+    scale   : 1:192 (4.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_28_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_28_crop.png
+
+  C_roof_29  [Structural_binder.pdf p11]
+    length  : 24.73 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (2115,1359) → (2351,1123)
+    scale   : 1:64 (13.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_29_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_29_crop.png
+
+  C_roof_30  [Structural_binder.pdf p10]
+    length  : 24.73 ft
+    angle   : 45.0 deg
+    stroke  : 0.24 pt
+    coords  : (470,1692) → (706,1456)
+    scale   : 1:64 (13.50 pt/ft)
+    [MANUAL CLASSIFICATION]: ___________________________
+    overview: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_30_overview.png
+    crop    : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\C_roof_30_crop.png
+
+============================================================================
+  Study data: D:\Steel-ghost\steelgenie\backend\brace_fp_study_output\fp_study_sheet.json
+  Images in : D:\Steel-ghost\steelgenie\backend\brace_fp_study_output
+  Total candidates rendered: 30
+============================================================================

@@ -1,0 +1,512 @@
+[
+  {
+    "id": "A_elevation_01",
+    "group": "A_elevation",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 49,
+    "scale": 192.0,
+    "length_ft": 95.99,
+    "angle": 51.5,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      732.1199951171875,
+      863.0400390625,
+      1001.1599731445312,
+      525.1201171875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_02",
+    "group": "A_elevation",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 47,
+    "scale": 192.0,
+    "length_ft": 93.77,
+    "angle": 52.2,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      383.7599792480469,
+      1726.6800537109375,
+      642.47998046875,
+      1393.320068359375
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_03",
+    "group": "A_elevation",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 48,
+    "scale": 192.0,
+    "length_ft": 93.6,
+    "angle": 52.2,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      374.03997802734375,
+      1218.1199951171875,
+      632.2799682617188,
+      885.360107421875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_04",
+    "group": "A_elevation",
+    "pdf": "Structural snaps.pdf",
+    "page": 7,
+    "scale": 96.0,
+    "length_ft": 38.88,
+    "angle": 49.9,
+    "stroke_w": 2.0,
+    "coords": [
+      2058.433837890625,
+      516.2301025390625,
+      2284.033935546875,
+      248.75
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_05",
+    "group": "A_elevation",
+    "pdf": "Structural snaps.pdf",
+    "page": 6,
+    "scale": 96.0,
+    "length_ft": 36.88,
+    "angle": 40.2,
+    "stroke_w": 0.24000005424022675,
+    "coords": [
+      486.78851318359375,
+      1217.671142578125,
+      740.2285766601562,
+      1431.9912109375
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_06",
+    "group": "A_elevation",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 49,
+    "scale": 192.0,
+    "length_ft": 94.34,
+    "angle": 51.8,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      738.719970703125,
+      1981.4400634765625,
+      1001.2799682617188,
+      1647.840087890625
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_07",
+    "group": "A_elevation",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 47,
+    "scale": 192.0,
+    "length_ft": 83.35,
+    "angle": 46.4,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      636.8399658203125,
+      763.320068359375,
+      378.0,
+      491.880126953125
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_08",
+    "group": "A_elevation",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 48,
+    "scale": 192.0,
+    "length_ft": 92.71,
+    "angle": 50.7,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      362.3999938964844,
+      1840.6800537109375,
+      626.3999633789062,
+      2163.719970703125
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_09",
+    "group": "A_elevation",
+    "pdf": "Structural snaps.pdf",
+    "page": 7,
+    "scale": 96.0,
+    "length_ft": 34.13,
+    "angle": 46.1,
+    "stroke_w": 2.0,
+    "coords": [
+      1623.313720703125,
+      787.5501708984375,
+      1410.19384765625,
+      566.39013671875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "A_elevation_10",
+    "group": "A_elevation",
+    "pdf": "Structural snaps.pdf",
+    "page": 6,
+    "scale": 96.0,
+    "length_ft": 25.13,
+    "angle": 50.1,
+    "stroke_w": 0.24000005424022675,
+    "coords": [
+      1263.068603515625,
+      399.0308837890625,
+      1118.108642578125,
+      572.6710205078125
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_11",
+    "group": "B_framing",
+    "pdf": "Structural snaps.pdf",
+    "page": 2,
+    "scale": 96.0,
+    "length_ft": 70.38,
+    "angle": 60.3,
+    "stroke_w": 2.0,
+    "coords": [
+      620.1083984375,
+      760.8192138671875,
+      934.0806884765625,
+      1310.9931640625
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_12",
+    "group": "B_framing",
+    "pdf": "#Structural binder.pdf",
+    "page": 12,
+    "scale": 64.0,
+    "length_ft": 66.23,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      1458.719970703125,
+      717.719970703125,
+      826.5599975585938,
+      1350.0
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_13",
+    "group": "B_framing",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 13,
+    "scale": 192.0,
+    "length_ft": 30.22,
+    "angle": 41.8,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      571.5599975585938,
+      632.52001953125,
+      672.9599609375,
+      723.1201171875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_14",
+    "group": "B_framing",
+    "pdf": "Structural snaps.pdf",
+    "page": 5,
+    "scale": 96.0,
+    "length_ft": 26.93,
+    "angle": 64.6,
+    "stroke_w": 1.9323099851608276,
+    "coords": [
+      53.91324996948242,
+      1132.10205078125,
+      157.9322967529297,
+      913.154541015625
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_15",
+    "group": "B_framing",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 9,
+    "scale": 192.0,
+    "length_ft": 25.89,
+    "angle": 45.3,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      568.9199829101562,
+      759.47998046875,
+      650.8800048828125,
+      842.280029296875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_16",
+    "group": "B_framing",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 8,
+    "scale": 192.0,
+    "length_ft": 25.49,
+    "angle": 31.4,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      568.6799926757812,
+      2512.080078125,
+      666.5999755859375,
+      2452.320068359375
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_17",
+    "group": "B_framing",
+    "pdf": "#Structural binder.pdf",
+    "page": 16,
+    "scale": 64.0,
+    "length_ft": 20.2,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      1129.43994140625,
+      859.56005859375,
+      936.5999755859375,
+      1052.4000244140625
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_18",
+    "group": "B_framing",
+    "pdf": "Structural snaps.pdf",
+    "page": 2,
+    "scale": 96.0,
+    "length_ft": 48.73,
+    "angle": 44.3,
+    "stroke_w": 2.0,
+    "coords": [
+      934.0806884765625,
+      1004.7606811523438,
+      620.1083984375,
+      1310.9931640625
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_19",
+    "group": "B_framing",
+    "pdf": "#Structural binder.pdf",
+    "page": 12,
+    "scale": 64.0,
+    "length_ft": 63.56,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      1433.2799072265625,
+      717.719970703125,
+      826.5599975585938,
+      1324.56005859375
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "B_framing_20",
+    "group": "B_framing",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 13,
+    "scale": 192.0,
+    "length_ft": 26.95,
+    "angle": 30.4,
+    "stroke_w": 0.35999998450279236,
+    "coords": [
+      568.3200073242188,
+      661.800048828125,
+      672.9599609375,
+      723.1201171875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_21",
+    "group": "C_roof",
+    "pdf": "Latest_Structural dwg_Binder (Addendum-02).pdf",
+    "page": 1,
+    "scale": 96.0,
+    "length_ft": 253.73,
+    "angle": 22.0,
+    "stroke_w": 0.2400004267692566,
+    "coords": [
+      272.1612548828125,
+      971.3953857421875,
+      2389.44970703125,
+      1826.87841796875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_22",
+    "group": "C_roof",
+    "pdf": "Structural snaps.pdf",
+    "page": 3,
+    "scale": 96.0,
+    "length_ft": 72.01,
+    "angle": 32.0,
+    "stroke_w": 3.0,
+    "coords": [
+      1672.035888671875,
+      1554.3980712890625,
+      2221.40625,
+      1210.49755859375
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_23",
+    "group": "C_roof",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 20,
+    "scale": 192.0,
+    "length_ft": 51.89,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      1215.3599853515625,
+      979.2000732421875,
+      1050.239990234375,
+      1144.320068359375
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_24",
+    "group": "C_roof",
+    "pdf": "#Structural binder.pdf",
+    "page": 11,
+    "scale": 64.0,
+    "length_ft": 25.69,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      2250.239990234375,
+      1376.4000244140625,
+      2495.52001953125,
+      1131.1199951171875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_25",
+    "group": "C_roof",
+    "pdf": "#Structural binder.pdf",
+    "page": 10,
+    "scale": 64.0,
+    "length_ft": 25.66,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      1270.43994140625,
+      1782.239990234375,
+      1515.3599853515625,
+      1537.320068359375
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_26",
+    "group": "C_roof",
+    "pdf": "Latest_Structural dwg_Binder (Addendum-02).pdf",
+    "page": 1,
+    "scale": 96.0,
+    "length_ft": 140.34,
+    "angle": 22.0,
+    "stroke_w": 1.1999999284744263,
+    "coords": [
+      523.2000122070312,
+      430.9200439453125,
+      1694.2799072265625,
+      904.080078125
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_27",
+    "group": "C_roof",
+    "pdf": "Structural snaps.pdf",
+    "page": 3,
+    "scale": 96.0,
+    "length_ft": 70.54,
+    "angle": 32.4,
+    "stroke_w": 3.0,
+    "coords": [
+      1671.117431640625,
+      1211.693603515625,
+      2207.1181640625,
+      1551.8973388671875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_28",
+    "group": "C_roof",
+    "pdf": "07_STRUCTURAL_COMBINED.pdf",
+    "page": 20,
+    "scale": 192.0,
+    "length_ft": 50.97,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      1211.52001953125,
+      1144.320068359375,
+      1049.4000244140625,
+      982.080078125
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_29",
+    "group": "C_roof",
+    "pdf": "#Structural binder.pdf",
+    "page": 11,
+    "scale": 64.0,
+    "length_ft": 24.73,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      2114.52001953125,
+      1359.239990234375,
+      2350.679931640625,
+      1123.2000732421875
+    ],
+    "classification": "PENDING"
+  },
+  {
+    "id": "C_roof_30",
+    "group": "C_roof",
+    "pdf": "#Structural binder.pdf",
+    "page": 10,
+    "scale": 64.0,
+    "length_ft": 24.73,
+    "angle": 45.0,
+    "stroke_w": 0.23999999463558197,
+    "coords": [
+      469.67999267578125,
+      1692.0,
+      705.8399658203125,
+      1455.9599609375
+    ],
+    "classification": "PENDING"
+  }
+]
