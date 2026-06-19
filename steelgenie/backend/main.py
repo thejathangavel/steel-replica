@@ -20,6 +20,30 @@ except Exception as _e:
     _RASTER_HOUGH_AVAILABLE = False
     print(f"[INIT] detection_cv not available — raster Hough disabled: {_e}")
 
+# ── Brace extraction engine ───────────────────────────────────────────────────
+try:
+    from brace_classifier import (
+        extract_diagonals        as _brace_extract_diagonals,
+        classify_page_context    as _brace_classify_context,
+        find_scale_annotations   as _brace_find_scales,
+        classify                 as _brace_classify,
+        scale_to_pts_per_foot    as _brace_ppf,
+    )
+    _BRACE_EXTRACTION_AVAILABLE = True
+    print("[INIT] brace_classifier loaded")
+except Exception as _e:
+    _BRACE_EXTRACTION_AVAILABLE = False
+    print(f"[INIT] brace_classifier not available: {_e}")
+
+# Feature flag — set BRACE_EXTRACTION=1 in environment to enable.
+# Default OFF so existing workflows are unaffected until real-world
+# production data has been collected.
+_BRACE_EXTRACTION_ENABLED = (
+    _BRACE_EXTRACTION_AVAILABLE and
+    os.getenv("BRACE_EXTRACTION", "0").strip() == "1"
+)
+print(f"[INIT] Brace extraction: {'ENABLED' if _BRACE_EXTRACTION_ENABLED else 'DISABLED'}")
+
 # ── Load Environment ──────────────────────────────────────────────────────────
 try:
     from dotenv import load_dotenv
@@ -80,24 +104,6 @@ STEEL_PATTERNS = [
     r'ISA[\dXx]+',
     r'PIPE[\d.]+',
 ]
-
-# Steel Joist Institute (SJI) joist designations — a JOIST, never a beam.
-#   K-series  : 22K9, 24K6 …            (open-web steel joist)
-#   LH-series : 44LH, 28LH09 …          (long-span)
-#   DLH/SLH   : 18DLH, 52DLH17 …        (deep long-span)
-# Depth (2 digits) + series + optional chord/section number.
-#   IMPORTANT: K-series requires a section number AFTER K (22K9), so a kip-load
-#   annotation like "40K" or "H=±40K" is NOT mistaken for a joist.
-JOIST_PATTERNS = [
-    r'\d{2}K\d{1,2}(?![A-Z])',                 # K-series  (digit after K required)
-    r'\d{2}(?:DLH|SLH|LH)\d{0,2}(?![A-Z])',    # LH / DLH / SLH long-span series
-]
-_JOIST_RE = re.compile(
-    r'^\d{2}(?:K\d{1,2}|(?:DLH|SLH|LH)\d{0,2})$', re.IGNORECASE)
-
-def is_joist_designation(profile: str) -> bool:
-    return bool(_JOIST_RE.match((profile or "").strip()))
-
 
 _GRID_LETTER = re.compile(r'^[A-Z](\.\d+)?$')
 _GRID_NUMBER  = re.compile(r'^\d+(\.\d+)?$')
@@ -327,6 +333,105 @@ def _snap_to_columns_along_axis(x1: float, y1: float,
         y2 = oy1 + best_right_t * uy
 
     return x1, y1, x2, y2, math.hypot(x2 - x1, y2 - y1)
+
+
+def _is_joist_pattern(x1: float, y1: float, x2: float, y2: float,
+                      seg_pool: list,
+                      angle_tol_deg: float = 4.0,
+                      colinear_tol: float = 5.0,
+                      gap_tol: float = 30.0) -> bool:
+    """
+    Detect whether the collinear segments along a matched beam axis form a
+    JOIST PATTERN — many short, regularly-spaced segments — rather than a real
+    beam (which is either a single continuous segment or a few pieces broken
+    only at girder crossings).
+
+    Joists in structural framing plans are drawn as a series of short parallel
+    marks spanning the bay (e.g. 8-20 short segments with uniform gaps).  The
+    W-section label (e.g. "W12X19") sits on one of these marks, and the
+    collinear chaining in Pass 0 bridges all the gaps, producing one large
+    false "beam" spanning the entire bay.
+
+    Rules (all must hold to flag as joist):
+      1. ≥ 4 collinear segments found along the axis within the chained span
+      2. Mean gap between consecutive segments is < 3 × mean segment length
+         (dense packing — beams have at most 1-3 breaks with large girder gaps)
+      3. Number of gaps ≥ 3  (at least 3 interruptions along the run)
+
+    Returns True if this looks like a joist run, False if it looks like a beam.
+    """
+    if not seg_pool:
+        return False
+
+    ln = math.hypot(x2 - x1, y2 - y1)
+    if ln < 1.0:
+        return False
+
+    ux = (x2 - x1) / ln
+    uy = (y2 - y1) / ln
+    px, py = -uy, ux
+    axis_ang = math.atan2(y2 - y1, x2 - x1)
+    if axis_ang < 0:
+        axis_ang += math.pi
+
+    # Collect all segments that are collinear with this axis
+    intervals: list = []  # (t_start, t_end) along axis
+    for (sx1, sy1, sx2, sy2, _sln) in seg_pool:
+        sdx, sdy = sx2 - sx1, sy2 - sy1
+        sang = math.atan2(sdy, sdx)
+        if sang < 0:
+            sang += math.pi
+        da = abs(axis_ang - sang)
+        if da > math.pi / 2:
+            da = math.pi - da
+        if math.degrees(da) > angle_tol_deg:
+            continue
+        # Perp offset of both endpoints from our axis
+        rv1x, rv1y = sx1 - x1, sy1 - y1
+        rv2x, rv2y = sx2 - x1, sy2 - y1
+        pd = min(abs(rv1x * px + rv1y * py), abs(rv2x * px + rv2y * py))
+        if pd > colinear_tol:
+            continue
+        t1 = rv1x * ux + rv1y * uy
+        t2 = rv2x * ux + rv2y * uy
+        if t1 > t2:
+            t1, t2 = t2, t1
+        # Only count segments that fall within (or very near) the chained span
+        if t2 < -gap_tol or t1 > ln + gap_tol:
+            continue
+        intervals.append((t1, t2))
+
+    if len(intervals) < 4:
+        return False  # too few segments — looks like a real beam (maybe 1-3 pieces)
+
+    # Sort by start position and compute segment lengths and gap lengths
+    intervals.sort(key=lambda iv: iv[0])
+
+    seg_lengths = [max(0.0, t2 - t1) for t1, t2 in intervals]
+    gaps = []
+    for i in range(len(intervals) - 1):
+        gap = intervals[i + 1][0] - intervals[i][1]
+        if gap > 0:
+            gaps.append(gap)
+
+    if len(gaps) < 3:
+        return False  # fewer than 3 gaps → broken beam, not joist
+
+    mean_seg = sum(seg_lengths) / len(seg_lengths) if seg_lengths else 1.0
+    mean_gap = sum(gaps) / len(gaps) if gaps else 0.0
+
+    # Joist criterion: gaps are small relative to segment length (dense packing).
+    # For a real beam broken at girder crossings, gap ≈ column width ≈ 1-2 ft
+    # which is often LARGER than the segment length for short infill beams.
+    # For joists, gap ≈ joist spacing (1-4 ft) but with MANY gaps densely packed.
+    # The key signal is having MANY gaps (≥3) with gap < 3× seg length.
+    if mean_gap < mean_seg * 3.0 and len(gaps) >= 3:
+        print(f"[JOIST_DETECT] Rejected joist pattern: "
+              f"{len(intervals)} segs, {len(gaps)} gaps, "
+              f"mean_seg={mean_seg:.1f}pt mean_gap={mean_gap:.1f}pt")
+        return True
+
+    return False
 
 
 def _extend_with_thin_segs(x1: float, y1: float, x2: float, y2: float,
@@ -708,6 +813,11 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
             if _bmid is not None:
                 _claimed_lines.add(_bmid)
             lx1, ly1, lx2, ly2, ln = best
+            _init_dx = lx2 - lx1
+            _init_dy = ly2 - ly1
+            _init_ln = math.hypot(_init_dx, _init_dy)
+            _ux = _init_dx / _init_ln if _init_ln > 0.1 else 1.0
+            _uy = _init_dy / _init_ln if _init_ln > 0.1 else 0.0
             # ── Pass 0: collinear thick-segment chaining (COLUMN-GATED) ───────
             # Beams are frequently drawn as MULTIPLE short collinear segments —
             # CAD exporters break the centreline at every girder crossing.  The
@@ -727,49 +837,77 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
             # a column back TO that column: a column between the matched piece
             # and the chained end means we crossed into a neighbouring beam.
             _om_x1, _om_y1, _om_x2, _om_y2 = lx1, ly1, lx2, ly2   # original extent
+            _chain_gap_tol = max(15.0, pts_per_foot * 1.0)
             _c1, _c2, _c3, _c4, _cln = _extend_with_thin_segs(
                 lx1, ly1, lx2, ly2, all_lines,
-                gap_tol=max(15.0, pts_per_foot * 1.0))
+                gap_tol=_chain_gap_tol)
             _cadx, _cady = abs(_c3 - _c1), abs(_c4 - _c2)
             _is_h_chain = _cadx > _cady
             _ccap = MAX_H_MATCH if _is_h_chain else MAX_V_MATCH
             if _cln <= _ccap and (_cln > ln + 1):
-                # Gate on REAL column symbols only — NOT grid lines.  A grid line
-                # crossing does not mean a column exists at THIS beam's position
-                # (a vertical infill beam crosses many row grid lines but frames
-                # girder-to-girder with no column between).  Truncate only where
-                # an actual detected column sits ON the beam axis between the
-                # matched piece and the chained end — that is a real beam-to-beam
-                # junction (two members meeting at a column), not one beam.
-                _PERP = 22.0   # column centre must lie within this of the axis
-                if _is_h_chain:
-                    _yl = (_c2 + _c4) / 2.0
-                    _ol, _orr = min(_om_x1, _om_x2), max(_om_x1, _om_x2)
-                    _nl, _nr  = min(_c1, _c3),       max(_c1, _c3)
-                    _colx = [s["cx"] for s in (column_symbols or [])
-                             if abs(s["cy"] - _yl) < _PERP]
-                    _lc = [c for c in _colx if _nl < c < _ol - 2]
-                    if _lc:
-                        _nl = max(_lc)         # stop at column nearest matched piece
-                    _rc = [c for c in _colx if _orr + 2 < c < _nr]
-                    if _rc:
-                        _nr = min(_rc)
-                    lx1, ly1, lx2, ly2 = _nl, _yl, _nr, _yl
-                    ln = abs(_nr - _nl)
+                # ── Joist-pattern guard ────────────────────────────────────
+                # Before accepting the chained result, check if the collinear
+                # segments form a JOIST PATTERN (many short segments with
+                # regular gaps).  Real beams are broken at 1-3 girder crossings
+                # with large gaps; joists have ≥4 densely-packed breaks.
+                # If detected, skip the chain — the original matched segment
+                # length is kept (short stub for a joist mark, not a full beam).
+                if _is_joist_pattern(
+                        _c1, _c2, _c3, _c4, all_lines,
+                        gap_tol=_chain_gap_tol):
+                    # Treat as joist: skip chaining, keep original segment only.
+                    # The resulting short stub will fail _span_valid unless it
+                    # happens to match a real beam line, so it gets dropped.
+                    pass
                 else:
-                    _xl = (_c1 + _c3) / 2.0
-                    _ot, _ob = min(_om_y1, _om_y2), max(_om_y1, _om_y2)
-                    _nt, _nb = min(_c2, _c4),       max(_c2, _c4)
-                    _coly = [s["cy"] for s in (column_symbols or [])
-                             if abs(s["cx"] - _xl) < _PERP]
-                    _tc = [c for c in _coly if _nt < c < _ot - 2]
-                    if _tc:
-                        _nt = max(_tc)
-                    _bc = [c for c in _coly if _ob + 2 < c < _nb]
-                    if _bc:
-                        _nb = min(_bc)
-                    lx1, ly1, lx2, ly2 = _xl, _nt, _xl, _nb
-                    ln = abs(_nb - _nt)
+                    # Gate on REAL column symbols only — NOT grid lines.  A grid line
+                    # crossing does not mean a column exists at THIS beam's position
+                    # (a vertical infill beam crosses many row grid lines but frames
+                    # girder-to-girder with no column between).  Truncate only where
+                    # an actual detected column sits ON the beam axis between the
+                    # matched piece and the chained end — that is a real beam-to-beam
+                    # junction (two members meeting at a column), not one beam.
+                    _PERP = 22.0   # column centre must lie within this of the axis
+                    if _is_h_chain:
+                        _yl = (_c2 + _c4) / 2.0
+                        _ol, _orr = min(_om_x1, _om_x2), max(_om_x1, _om_x2)
+                        _nl, _nr  = min(_c1, _c3),       max(_c1, _c3)
+                        _colx = [s["cx"] for s in (column_symbols or [])
+                                 if abs(s["cy"] - _yl) < _PERP]
+                        _lc = [c for c in _colx if _nl < c < _ol - 2]
+                        if _lc:
+                            _nl = max(_lc)         # stop at column nearest matched piece
+                        _rc = [c for c in _colx if _orr + 2 < c < _nr]
+                        if _rc:
+                            _nr = min(_rc)
+                        if abs(_ux) > 1e-6:
+                            ly1 = _om_y1 + (_nl - _om_x1) * (_uy / _ux)
+                            ly2 = _om_y1 + (_nr - _om_x1) * (_uy / _ux)
+                        else:
+                            ly1 = _yl
+                            ly2 = _yl
+                        lx1, lx2 = _nl, _nr
+                        ln = math.hypot(lx2 - lx1, ly2 - ly1)
+                    else:
+                        _xl = (_c1 + _c3) / 2.0
+                        _ot, _ob = min(_om_y1, _om_y2), max(_om_y1, _om_y2)
+                        _nt, _nb = min(_c2, _c4),       max(_c2, _c4)
+                        _coly = [s["cy"] for s in (column_symbols or [])
+                                 if abs(s["cx"] - _xl) < _PERP]
+                        _tc = [c for c in _coly if _nt < c < _ot - 2]
+                        if _tc:
+                            _nt = max(_tc)
+                        _bc = [c for c in _coly if _ob + 2 < c < _nb]
+                        if _bc:
+                            _nb = min(_bc)
+                        if abs(_uy) > 1e-6:
+                            lx1 = _om_x1 + (_nt - _om_y1) * (_ux / _uy)
+                            lx2 = _om_x1 + (_nb - _om_y1) * (_ux / _uy)
+                        else:
+                            lx1 = _xl
+                            lx2 = _xl
+                        ly1, ly2 = _nt, _nb
+                        ln = math.hypot(lx2 - lx1, ly2 - ly1)
             # Remember the matched centreline extent (AFTER collinear chaining)
             # BEFORE the snap passes.  The final clamp below bounds the COMBINED
             # growth of the snap passes (column snap, intersection snap) to
@@ -931,6 +1069,14 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
             # adjacent column centre and never jumps to the next bay, and never
             # overshoots — nearest-snap pulls an over-long end back too).
             # This is what makes beams land true centre-to-centre, generically.
+            _curr_dx = lx2 - lx1
+            _curr_dy = ly2 - ly1
+            _curr_ln = math.hypot(_curr_dx, _curr_dy)
+            if _curr_ln > 0.1:
+                _ux, _uy = _curr_dx / _curr_ln, _curr_dy / _curr_ln
+            else:
+                _ux, _uy = 1.0, 0.0
+
             if _is_H and _col_snap_x:
                 _gx1 = min(_col_snap_x, key=lambda gx: abs(lx1 - gx))
                 _gx2 = min(_col_snap_x, key=lambda gx: abs(lx2 - gx))
@@ -939,16 +1085,24 @@ def detect_beam_lines(page, profiles: list, plan_bounds: tuple,
                 # beam) and never lose the span of a short in-bay beam.
                 if abs(_gx1 - _gx2) > 5:
                     if abs(lx1 - _gx1) <= _EXT_MAX:
+                        if abs(_ux) > 1e-6:
+                            ly1 = ly1 + (_gx1 - lx1) * (_uy / _ux)
                         lx1 = _gx1
                     if abs(lx2 - _gx2) <= _EXT_MAX:
+                        if abs(_ux) > 1e-6:
+                            ly2 = ly2 + (_gx2 - lx2) * (_uy / _ux)
                         lx2 = _gx2
             elif _is_V and _col_snap_y:
                 _gy1 = min(_col_snap_y, key=lambda gy: abs(ly1 - gy))
                 _gy2 = min(_col_snap_y, key=lambda gy: abs(ly2 - gy))
                 if abs(_gy1 - _gy2) > 5:
                     if abs(ly1 - _gy1) <= _EXT_MAX:
+                        if abs(_uy) > 1e-6:
+                            lx1 = lx1 + (_gy1 - ly1) * (_ux / _uy)
                         ly1 = _gy1
                     if abs(ly2 - _gy2) <= _EXT_MAX:
+                        if abs(_uy) > 1e-6:
+                            lx2 = lx2 + (_gy2 - ly2) * (_ux / _uy)
                         ly2 = _gy2
 
             # ── FINAL ANTI-OVERSHOOT CLAMP ────────────────────────────────────
@@ -2285,8 +2439,7 @@ def extract_profiles(page, page_w, page_h, plan_bounds, text_dict=None):
         if any(zx0 <= cx <= zx1 and zy0 <= cy <= zy1
                for zx0, zy0, zx1, zy1 in excluded_zones):
             return
-        for pat, _mtype in ([(p, "beam") for p in STEEL_PATTERNS]
-                            + [(p, "joist") for p in JOIST_PATTERNS]):
+        for pat in STEEL_PATTERNS:
             m = re.search(pat, text, re.IGNORECASE)
             if m:
                 # Dedup radius 10 pt (was 20): dense framing plans have labels
@@ -2315,7 +2468,6 @@ def extract_profiles(page, page_w, page_h, plan_bounds, text_dict=None):
                         eff_w, eff_h = bbox_w, bbox_h
                     profiles.append({
                         "profile": normalize_profile(m.group(0)),
-                        "member_type": _mtype,   # "beam" or "joist" (by designation)
                         "cx": cx, "cy": cy,
                         "dir_hint": "V" if _is_vert else "H",
                         "text_angle": angle,
@@ -2646,13 +2798,6 @@ def build_members(profiles, page_w, page_h,
                 v_grid=v_grid, h_grid=h_grid,
             )
 
-        # Joists are drawn as lines like beams — route them through the beam
-        # line-matching so they get a span.  Their final type is set to "joist"
-        # at member creation (by SJI designation), overriding any spurious column
-        # classification of a joist tag that lands near a grid crossing.
-        if p.get("member_type") == "joist" or is_joist_designation(p["profile"]):
-            mtype = "beam"
-
         # ── Beam-line override ────────────────────────────────────────────────
         # detect_beam_lines() matches labels that sit ON a drawn structural
         # centreline at (or near) its midpoint.  Column labels are placed AT
@@ -2754,14 +2899,25 @@ def build_members(profiles, page_w, page_h,
                 beam_dir  = line_hit["dir"]
                 length_pt = line_hit["length_pt"]
 
-                # W-sections in framing plans are always H or V — never diagonal.
-                # A diagonal match means the label was near a stair boundary, brace,
-                # or section-cut line.  Reject it so grid fallback runs instead.
+                # A W-section matching a DIAGONAL line is usually a false match to a
+                # stair / brace / section-cut line (those run at ~45°).  BUT on a
+                # SKEWED / fanned framing plan the whole grid is rotated a few
+                # degrees, so a real beam's matched line is "D" at only a SLIGHT
+                # off-axis angle.  Reject only STEEP diagonals; keep gently-angled
+                # ones so the overlay follows the actual skewed beam instead of
+                # being flattened to horizontal/vertical by the grid fallback.
                 _is_w_section = re.match(r'W\d+[Xx]\d+', p["profile"].upper())
                 if _is_w_section and beam_dir == "D":
-                    print(f"[BUILD] Rejected diagonal match for W-section "
-                          f"{p['profile']} — likely stair/brace line")
-                    line_hit = None
+                    _adx = line_hit["x2"] - line_hit["x1"]
+                    _ady = line_hit["y2"] - line_hit["y1"]
+                    _ang = abs(math.degrees(math.atan2(_ady, _adx))) % 180
+                    _off = min(_ang, abs(_ang - 90), abs(_ang - 180))  # ° off nearest axis
+                    if _off > 35:
+                        print(f"[BUILD] Rejected steep-diagonal match for W-section "
+                              f"{p['profile']} ({_off:.0f}° off-axis) — stair/brace line")
+                        line_hit = None
+                    # else: a gently-angled match on a skewed plan → keep it, so the
+                    # overlay preserves the real beam angle.
 
                 if line_hit and length_pt < MIN_STRUCT_PT:
                     print(f"[BUILD] Vector match too short ({length_pt:.0f} pt) "
@@ -2891,7 +3047,7 @@ def build_members(profiles, page_w, page_h,
                     else:
                         print(f"[BUILD] Grid span discarded for {p['profile']} "
                               f"(label=({lx_frac:.3f},{ly_frac:.3f}) "
-                              f"span=({_bx1:.3f},{_by1:.3f})→({_bx2:.3f},{_by2:.3f})"
+                              f"span=({_bx1:.3f},{_by1:.3f})->({_bx2:.3f},{_by2:.3f})"
                               f" dir={beam_dir})")
 
         # ── Final span sanity check ──────────────────────────────────────────
@@ -2952,14 +3108,9 @@ def build_members(profiles, page_w, page_h,
                     length_ft = 0.0
 
         sym = profile_sym_pos.get(p_idx)
-        # Final type: a joist designation (44LH / 22K9 …) is a JOIST, never a beam.
-        _final_type = ("joist"
-                       if (p.get("member_type") == "joist"
-                           or is_joist_designation(p["profile"]))
-                       else mtype)
         members.append({
             "profile":   p["profile"],
-            "type":      _final_type,
+            "type":      mtype,
             "length_ft": length_ft,
             "beam_dir":  beam_dir,   # "H" | "V" for beams; None for columns/braces
             # Beam span endpoints (fractions of page) for the line overlay.
@@ -2976,10 +3127,9 @@ def build_members(profiles, page_w, page_h,
             "sx": sym[0] if sym else None,
             "sy": sym[1] if sym else None,
             "w":  0.025, "h": 0.012,
-            "color":     ("#9CA3AF" if _final_type == "joist"
-                          else MEMBER_COLORS.get(_final_type, "#6B7280")),
+            "color":     MEMBER_COLORS.get(mtype, "#6B7280"),
             "confirmed": True,
-            "is_column": _final_type == "column",
+            "is_column": mtype == "column",
         })
 
     # ── Post-processing: remove duplicates and short stubs ───────────────────
@@ -3044,7 +3194,7 @@ def build_members(profiles, page_w, page_h,
         deduped_beams.append(keeper)
         if len(grp) > 1:
             dropped = [m["profile"] for m in grp if m is not keeper]
-            print(f"[DEDUP] Merged {len(grp)} beams at same span → kept {winner}, "
+            print(f"[DEDUP] Merged {len(grp)} beams at same span -> kept {winner}, "
                   f"dropped {dropped}")
 
     # ── 3. PARALLEL-OVERLAP DEDUP ─────────────────────────────────────────────
@@ -3117,86 +3267,9 @@ def build_members(profiles, page_w, page_h,
 
     deduped = deduped_beams + no_span_beams + \
               [m for m in filtered if m["type"] != "beam"]
-    print(f"[DEDUP] {len(members)} → {len(deduped)} members "
+    print(f"[DEDUP] {len(members)} -> {len(deduped)} members "
           f"({len(members)-len(deduped)} removed)")
     return deduped
-
-
-def trim_floating_endpoints(members, page_w, page_h, pts_per_foot):
-    """Pull any beam endpoint that FLOATS in empty space back to its nearest
-    REAL support — a detected column or a perpendicular beam.  Grid and dimension
-    lines do NOT count as support, so a beam that overshot along a grid line into
-    an empty area (canopy, margin, past the framing) is trimmed to the last
-    girder/column it actually frames into.  Only ever SHORTENS; a 3 ft min-span
-    guard prevents collapsing a beam.  Universal — keys off real members only.
-    """
-    ppf = pts_per_foot if pts_per_foot > 0 else 9.0
-    R        = 1.8 * ppf      # endpoint within this of a support ⇒ supported
-    MIN_SPAN = 3.0 * ppf
-    beams = [m for m in members
-             if m.get("type") == "beam" and m.get("bx1") is not None]
-    colpts = [(m["x"] * page_w, m["y"] * page_h)
-              for m in members if m.get("type") == "column"]
-    segs = [(n, n["bx1"]*page_w, n["by1"]*page_h, n["bx2"]*page_w, n["by2"]*page_h)
-            for n in beams]
-
-    trimmed = 0
-    for m in beams:
-        x1, y1 = m["bx1"]*page_w, m["by1"]*page_h
-        x2, y2 = m["bx2"]*page_w, m["by2"]*page_h
-        L = math.hypot(x2-x1, y2-y1)
-        if L < 1:
-            continue
-        ux, uy = (x2-x1)/L, (y2-y1)/L
-        px, py = -uy, ux
-
-        cross = []   # parametric t (along axis) of every REAL support crossing
-        for cx, cy in colpts:
-            if abs((cx-x1)*px+(cy-y1)*py) < R:          # column on the axis
-                cross.append((cx-x1)*ux + (cy-y1)*uy)
-        for (n, nx1, ny1, nx2, ny2) in segs:
-            if n is m:
-                continue
-            ndx, ndy = nx2-nx1, ny2-ny1
-            nl = math.hypot(ndx, ndy) or 1.0
-            nux, nuy = ndx/nl, ndy/nl
-            if abs(ux*nux + uy*nuy) > 0.5:               # need a perpendicular beam
-                continue
-            den = ux*nuy - uy*nux
-            if abs(den) < 1e-6:
-                continue
-            t = ((nx1-x1)*nuy - (ny1-y1)*nux) / den       # crossing on our axis
-            u = ((nx1-x1)*uy  - (ny1-y1)*ux ) / den       # crossing on the other beam
-            if -R <= u <= nl + R:
-                cross.append(t)
-        if not cross:
-            continue
-
-        def near(tt):
-            return any(abs(c - tt) < R for c in cross)
-
-        new0, new1 = 0.0, L
-        if not near(0.0):
-            inward = [c for c in cross if R < c < L - R]
-            if inward:
-                new0 = min(inward)                        # first real support in from the start
-        if not near(L):
-            inward = [c for c in cross if new0 + R < c < L - R]
-            if inward:
-                new1 = max(inward)                        # last real support before the end
-
-        if (new0 > 0 or new1 < L) and (new1 - new0) >= MIN_SPAN:
-            a1, b1 = x1 + ux*new0, y1 + uy*new0
-            a2, b2 = x1 + ux*new1, y1 + uy*new1
-            m["bx1"] = round(a1/page_w, 4); m["by1"] = round(b1/page_h, 4)
-            m["bx2"] = round(a2/page_w, 4); m["by2"] = round(b2/page_h, 4)
-            m["x"]   = round((a1+a2)/2/page_w, 4)
-            m["y"]   = round((b1+b2)/2/page_h, 4)
-            m["length_ft"] = round(math.hypot(a2-a1, b2-b1)/ppf, 1)
-            trimmed += 1
-    if trimmed:
-        print(f"[FLOAT] trimmed {trimmed} beam(s) overshooting into empty space")
-    return members
 
 
 def dedup_overlapping_beams(members, page_w, page_h, pts_per_foot):
@@ -4340,6 +4413,7 @@ class AnalysisRequest(BaseModel):
     scale_ratio:      float = None
     ocr_dpi:          int   = 400
     detect_unlabeled: bool  = False   # off by default — enable to show (beam?) candidates
+    detect_braces:    bool  = False   # off by default — enable to overlay brace extraction
 
 class SaveProjectRequest(BaseModel):
     name:        str
@@ -4781,10 +4855,50 @@ async def analyse_pdf(req: AnalysisRequest):
         # shorter; leaves two distinct labeled beams alone).
         members = dedup_overlapping_beams(members, page_w, page_h, pts_per_foot)
 
-        # Pull any beam endpoint that floats in empty space (overshot along a grid
-        # or dimension line) back to its nearest real support — column or
-        # perpendicular beam.  This kills the canopy/margin/past-framing overshoot.
-        members = trim_floating_endpoints(members, page_w, page_h, pts_per_foot)
+        # ── BRACE EXTRACTION ──────────────────────────────────────────────────
+        # Enabled when the BRACE_EXTRACTION env flag is set OR when the caller
+        # explicitly passes detect_braces=true in the request body.
+        if _BRACE_EXTRACTION_ENABLED or req.detect_braces:
+            if _BRACE_EXTRACTION_AVAILABLE:
+                try:
+                    _bppf          = _brace_ppf(req.scale_ratio) if req.scale_ratio else pts_per_foot
+                    _b_candidates  = _brace_extract_diagonals(page, _bppf)
+                    _b_ctx, _      = _brace_classify_context(page)
+                    _b_scales      = _brace_find_scales(page)
+                    _b_classified  = _brace_classify(_b_candidates, _b_ctx, _b_scales, _bppf)
+
+                    _b_high   = [c for c in _b_classified if c["confidence"] == "HIGH"]
+                    _b_medium = [c for c in _b_classified if c["confidence"] == "MEDIUM"]
+
+                    for _bc in (_b_high + _b_medium):
+                        members.append({
+                            "type":       "brace",
+                            "profile":    None,
+                            "label":      None,
+                            "confidence": _bc["confidence"],
+                            "context":    _bc.get("page_context", _b_ctx),
+                            "length_ft":  _bc["length_ft"],
+                            "angle_deg":  _bc["angle_from_h"],
+                            # Normalised fractional coords (0–1) matching beam format
+                            "bx1":  round(_bc["x1"] / page_w, 4),
+                            "by1":  round(_bc["y1"] / page_h, 4),
+                            "bx2":  round(_bc["x2"] / page_w, 4),
+                            "by2":  round(_bc["y2"] / page_h, 4),
+                            # Midpoint for label placement
+                            "x":    round((_bc["x1"] + _bc["x2"]) / 2 / page_w, 4),
+                            "y":    round((_bc["y1"] + _bc["y2"]) / 2 / page_h, 4),
+                            "lx":   round((_bc["x1"] + _bc["x2"]) / 2 / page_w, 4),
+                            "ly":   round((_bc["y1"] + _bc["y2"]) / 2 / page_h, 4),
+                            "sx":   round(_bc["x1"] / page_w, 4),
+                            "sy":   round(_bc["y1"] / page_h, 4),
+                        })
+
+                    print(f"[BRACE] ctx={_b_ctx}  HIGH={len(_b_high)}  "
+                          f"MED={len(_b_medium)}  total_candidates={len(_b_classified)}")
+                except Exception as _be:
+                    print(f"[BRACE] extraction error (non-fatal): {_be}")
+            else:
+                print("[BRACE] brace_classifier not available — skipping")
 
         # ── ROTATION OUTPUT TRANSFORM ─────────────────────────────────────────
         # All member coordinates above are fractions of the UNROTATED page
@@ -4814,7 +4928,7 @@ async def analyse_pdf(req: AnalysisRequest):
                 _m["bx2"], _m["by2"] = _rot_frac(_m.get("bx2"), _m.get("by2"))
             print(f"[ANALYSE] Applied {page.rotation}° rotation transform "
                   f"to {len(members)} members (unrotated {_puw:.0f}x{_puh:.0f} "
-                  f"→ display {_rw:.0f}x{_rh:.0f})")
+                  f"-> display {_rw:.0f}x{_rh:.0f})")
 
         summary = build_summary(members)
 

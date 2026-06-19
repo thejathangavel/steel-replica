@@ -78,8 +78,6 @@ def _run_pipeline(case):
     mem = main.center_beam_overlays(mem, lw, pw, ph)
     if hasattr(main, "dedup_overlapping_beams"):
         mem = main.dedup_overlapping_beams(mem, pw, ph, ppf)
-    if hasattr(main, "trim_floating_endpoints"):
-        mem = main.trim_floating_endpoints(mem, pw, ph, ppf)
     return {"members": mem, "pw": pw, "ph": ph, "ppf": ppf,
             "lines_w": lw, "ccx": ccx, "ccy": ccy}
 
